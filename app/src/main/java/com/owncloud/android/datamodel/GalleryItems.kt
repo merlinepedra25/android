@@ -22,4 +22,4 @@
 
 package com.owncloud.android.datamodel
 
-data class GalleryItems(val date: Long, val files: List<OCFile>)
+data class GalleryItems(val date: Long, val rows: List<GalleryRow>)

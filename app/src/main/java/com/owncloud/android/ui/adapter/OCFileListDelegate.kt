@@ -23,11 +23,13 @@ package com.owncloud.android.ui.adapter
 
 import android.content.Context
 import android.view.View
+import android.widget.ImageView
 import com.nextcloud.client.account.User
 import com.nextcloud.client.preferences.AppPreferences
 import com.owncloud.android.R
 import com.owncloud.android.datamodel.FileDataStorageManager
 import com.owncloud.android.datamodel.OCFile
+import com.owncloud.android.datamodel.ThumbnailsCacheManager
 import com.owncloud.android.datamodel.ThumbnailsCacheManager.ThumbnailGenerationTask
 import com.owncloud.android.lib.common.utils.Log_OC
 import com.owncloud.android.ui.activity.ComponentsGetter
@@ -56,6 +58,7 @@ class OCFileListDelegate(
     private var highlightedItem: OCFile? = null
     var isMultiSelect = false
     private val asyncTasks: MutableList<ThumbnailGenerationTask> = ArrayList()
+    private val asyncGalleryTasks: MutableList<ThumbnailsCacheManager.GalleryImageGenerationTask> = ArrayList()
     fun setHighlightedItem(highlightedItem: OCFile?) {
         this.highlightedItem = highlightedItem
     }
@@ -87,6 +90,24 @@ class OCFileListDelegate(
 
     fun clearCheckedItems() {
         checkedFiles.clear()
+    }
+
+    fun bindGalleryRowThumbnail(imageView: ImageView, file: OCFile) {
+        // thumbnail
+        imageView.tag = file.fileId
+        DisplayUtils.setGalleryImage(
+            file,
+            imageView,
+            user,
+            storageManager,
+            asyncGalleryTasks,
+            gridView,
+            context,
+            null,
+            preferences,
+            themeColorUtils,
+            themeDrawableUtils
+        )
     }
 
     fun bindGridViewHolder(

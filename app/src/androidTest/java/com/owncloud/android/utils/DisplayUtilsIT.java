@@ -20,14 +20,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.owncloud.android.ui.adapter
+package com.owncloud.android.utils;
 
-import android.widget.ImageView
-import com.afollestad.sectionedrecyclerview.SectionedViewHolder
-import com.owncloud.android.databinding.GridImageBinding
+import com.owncloud.android.AbstractIT;
 
-class GalleryItemViewHolder(val binding: GridImageBinding) :
-    SectionedViewHolder(binding.root) {
-    val thumbnail: ImageView
-        get() = binding.thumbnail
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class DisplayUtilsIT extends AbstractIT {
+    @Test
+    public void testPixelToDP() {
+        int px = 123;
+        float dp = DisplayUtils.convertPixelToDp(px, targetContext);
+        int newPx = DisplayUtils.convertDpToPixel(dp, targetContext);
+
+        assertEquals(px, newPx);
+    }
 }

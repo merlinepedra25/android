@@ -47,6 +47,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -375,7 +376,8 @@ public final class BitmapUtils {
         return drawableToBitmap(drawable, -1, -1);
     }
 
-    public static Bitmap drawableToBitmap(Drawable drawable, int desiredWidth, int desiredHeight) {
+    public static @NonNull
+    Bitmap drawableToBitmap(Drawable drawable, int desiredWidth, int desiredHeight) {
         if (drawable instanceof BitmapDrawable) {
             BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
             if (bitmapDrawable.getBitmap() != null) {

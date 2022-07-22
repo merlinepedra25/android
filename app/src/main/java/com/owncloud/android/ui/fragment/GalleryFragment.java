@@ -25,6 +25,7 @@ package com.owncloud.android.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -76,6 +77,9 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
 
     @Inject ThemeMenuUtils themeMenuUtils;
     @Inject FileDataStorageManager fileDataStorageManager;
+    private final int maxColumnSizeLandscape = 5;
+    private final int maxColumnSizePortrait = 2;
+    private int columnSize;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,6 +90,12 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
 
         if (galleryFragmentBottomSheetDialog == null) {
             galleryFragmentBottomSheetDialog = new GalleryFragmentBottomSheetDialog(this);
+        }
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            columnSize = maxColumnSizeLandscape;
+        } else {
+            columnSize = maxColumnSizePortrait;
         }
     }
 
@@ -110,7 +120,7 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
         getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                loadMoreWhenEndReached(recyclerView, dy);
+                // loadMoreWhenEndReached(recyclerView, dy);
             }
         });
 
@@ -145,7 +155,7 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
         setRecyclerViewAdapter(mAdapter);
 
 
-        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), getColumnsCount());
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 1);
         mAdapter.setLayoutManager(layoutManager);
         getRecyclerView().setLayoutManager(layoutManager);
 
@@ -154,6 +164,21 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
                                    themeDrawableUtils,
                                    getRecyclerView(),
                                    new GalleryFastScrollViewHelper(getRecyclerView(), mAdapter));
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            columnSize = maxColumnSizeLandscape;
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            columnSize = maxColumnSizePortrait;
+        }
+    }
+
+    public int getColumnsCount() {
+        return columnSize;
     }
 
     @Override

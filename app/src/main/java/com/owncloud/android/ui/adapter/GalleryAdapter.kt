@@ -26,28 +26,35 @@ package com.owncloud.android.ui.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
+import androidx.core.content.res.ResourcesCompat
 import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter
 import com.afollestad.sectionedrecyclerview.SectionedViewHolder
 import com.nextcloud.client.account.User
 import com.nextcloud.client.preferences.AppPreferences
+import com.owncloud.android.R
 import com.owncloud.android.databinding.GalleryHeaderBinding
-import com.owncloud.android.databinding.GridImageBinding
+import com.owncloud.android.databinding.GalleryRowBinding
 import com.owncloud.android.datamodel.FileDataStorageManager
 import com.owncloud.android.datamodel.GalleryItems
+import com.owncloud.android.datamodel.GalleryRow
 import com.owncloud.android.datamodel.OCFile
+import com.owncloud.android.datamodel.ThumbnailsCacheManager
+import com.owncloud.android.lib.common.utils.Log_OC
 import com.owncloud.android.ui.activity.ComponentsGetter
 import com.owncloud.android.ui.fragment.GalleryFragment
 import com.owncloud.android.ui.fragment.GalleryFragmentBottomSheetDialog
 import com.owncloud.android.ui.fragment.SearchType
 import com.owncloud.android.ui.interfaces.OCFileListFragmentInterface
+import com.owncloud.android.utils.BitmapUtils
 import com.owncloud.android.utils.DisplayUtils
 import com.owncloud.android.utils.FileSortOrder
-import com.owncloud.android.utils.FileStorageUtils
 import com.owncloud.android.utils.MimeTypeUtil
 import com.owncloud.android.utils.theme.ThemeColorUtils
 import com.owncloud.android.utils.theme.ThemeDrawableUtils
@@ -100,8 +107,8 @@ class GalleryAdapter(
                 )
             )
         } else {
-            GalleryItemViewHolder(
-                GridImageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            GalleryRowHolder(
+                GalleryRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             )
         }
     }
@@ -113,19 +120,123 @@ class GalleryAdapter(
         absolutePosition: Int
     ) {
         if (holder != null) {
-            val itemViewHolder = holder as GalleryItemViewHolder
-            val ocFile = files[section].files[relativePosition]
+            val rowHolder = holder as GalleryRowHolder
+            val row = files[section].rows[relativePosition]
 
-            ocFileListDelegate.bindGridViewHolder(
-                itemViewHolder,
-                ocFile,
-                SearchType.GALLERY_SEARCH
+            val screenWidth =
+                DisplayUtils.convertDpToPixel(context.resources.configuration.screenWidthDp.toFloat(), context)
+                    .toFloat()
+            val summedWidth = row.getSummedWidth().toFloat()
+
+            var thumbnail1 = ThumbnailsCacheManager.getBitmapFromDiskCache(
+                ThumbnailsCacheManager.PREFIX_RESIZED_IMAGE + row.files[0].remoteId
             )
+
+            if (thumbnail1 == null) {
+                val drawable = ResourcesCompat.getDrawable(
+                    context.resources,
+                    R.drawable.file_image,
+                    null
+                )
+                val px = ThumbnailsCacheManager.getThumbnailDimension()
+                thumbnail1 = BitmapUtils.drawableToBitmap(drawable, px, px)
+            }
+
+            var thumbnail2: Bitmap? = null
+
+            if (row.files.size > 1) {
+                thumbnail2 = ThumbnailsCacheManager.getBitmapFromDiskCache(
+                    ThumbnailsCacheManager.PREFIX_RESIZED_IMAGE + row.files[1].remoteId
+                )
+            }
+
+            if (thumbnail2 == null) {
+                val drawable = ResourcesCompat.getDrawable(
+                    context.resources,
+                    R.drawable.file_image,
+                    null
+                )
+                val px = ThumbnailsCacheManager.getThumbnailDimension()
+                thumbnail2 = BitmapUtils.drawableToBitmap(drawable, px, px)
+            }
+
+            // first adjust all thumbnails to max height
+            val height1 = thumbnail1.height
+            val width1 = thumbnail1.width
+            val oldAspect1 = height1 / width1.toFloat()
+
+            val scaleFactor1 = row.getMaxHeight().toFloat() / height1
+            val newHeight1 = height1 * scaleFactor1
+            val newWidth1 = width1.toFloat() * scaleFactor1
+            val newAspect1 = height1 / width1.toFloat() // must be same as oldAspect
+
+            val height2 = thumbnail2.height
+            val width2 = thumbnail2.width
+            val oldAspect2 = height2 / width2.toFloat()
+
+            val scaleFactor2 = row.getMaxHeight().toFloat() / height2
+            val newHeight2 = height2 * scaleFactor2
+            val newWidth2 = width2.toFloat() * scaleFactor2
+            val newAspect2 = height2 / width2.toFloat() // must be same as oldAspect
+
+            Log_OC.d(
+                "Gallery_thumbnail",
+                "old: $width1 x $height1 new: $newWidth1 x $newHeight1 aspectOld: $oldAspect1 aspectNew: $newAspect1"
+            )
+            Log_OC.d(
+                "Gallery_thumbnail",
+                "old: $width2 x $height2 new: $newWidth2 x $newHeight2 aspectOld: $oldAspect2 aspectNew: $newAspect2"
+            )
+
+            val newSummedWidth = newWidth1 + newWidth2
+            val shrinkRatio = screenWidth / newSummedWidth
+
+            val adjustedHeight1 = (newHeight1 * shrinkRatio).toInt()
+            val adjustedWidth1 = (newWidth1 * shrinkRatio).toInt()
+
+            ocFileListDelegate.bindGalleryRowThumbnail(
+                rowHolder.binding.thumbnail1,
+                row.files[0]
+            )
+
+            rowHolder.binding.thumbnail1.layoutParams.height = adjustedHeight1
+            rowHolder.binding.thumbnail1.layoutParams.width = adjustedWidth1
+            rowHolder.binding.thumbnail1.invalidate()
+
+            if (row.files.size > 1) {
+                val adjustedHeight2 = (newHeight2 * shrinkRatio).toInt()
+                val adjustedWidth2 = (newWidth2 * shrinkRatio).toInt()
+
+                val sumAdjustedWith = adjustedWidth1 + adjustedWidth1
+
+                ocFileListDelegate.bindGalleryRowThumbnail(
+                    rowHolder.binding.thumbnail2,
+                    row.files[1]
+                )
+                rowHolder.binding.thumbnail2.layoutParams.height = adjustedHeight2
+                rowHolder.binding.thumbnail2.layoutParams.width = adjustedWidth2
+                rowHolder.binding.thumbnail2.invalidate()
+
+                Log_OC.d(
+                    "Gallery_thumbnail",
+                    "Screen width: $screenWidth shrinkRatio: $shrinkRatio maxHeight: ${row.getMaxHeight()}"
+                )
+                Log_OC.d(
+                    "Gallery_thumbnail",
+                    "file1: $adjustedWidth1 x $adjustedHeight1 aspectOld: $oldAspect1 aspectNew: $newAspect1"
+                )
+                Log_OC.d(
+                    "Gallery_thumbnail",
+                    "file2: $adjustedWidth2 x $adjustedHeight2 aspectOld: $oldAspect2 aspectNew: $newAspect2"
+                )
+            } else {
+                rowHolder.binding.thumbnail2.visibility = View.GONE
+            }
         }
     }
 
     override fun getItemCount(section: Int): Int {
-        return files[section].files.size
+        return files[section].rows.size
     }
 
     override fun getSectionCount(): Int {
@@ -203,10 +314,16 @@ class GalleryAdapter(
 
         files = finalSortedList
             .groupBy { firstOfMonth(it.modificationTimestamp) }
-            .map { GalleryItems(it.key, FileStorageUtils.sortOcFolderDescDateModifiedWithoutFavoritesFirst(it.value)) }
+            .map { GalleryItems(it.key, map(it.value)) }
             .sortedBy { it.date }.reversed()
 
         Handler(Looper.getMainLooper()).post { notifyDataSetChanged() }
+    }
+
+    fun map(list: List<OCFile>): List<GalleryRow> {
+        return list.withIndex()
+            .groupBy { it.index / 2 }
+            .map { entry -> GalleryRow(entry.value.map { it.value }) }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -231,10 +348,12 @@ class GalleryAdapter(
     }
 
     fun getItem(position: Int): OCFile? {
-        val itemCoord = getRelativePosition(position)
-        return files
-            .getOrNull(itemCoord.section())?.files
-            ?.getOrNull(itemCoord.relativePos())
+        return null
+        // TODO
+        // val itemCoord = getRelativePosition(position)
+        // return files
+        //     .getOrNull(itemCoord.section())?.files
+        //     ?.getOrNull(itemCoord.relativePos())
     }
 
     override fun isMultiSelect(): Boolean {
@@ -246,8 +365,10 @@ class GalleryAdapter(
     }
 
     override fun getItemPosition(file: OCFile): Int {
-        val item = files.find { it.files.contains(file) }
-        return getAbsolutePosition(files.indexOf(item), item?.files?.indexOf(file) ?: 0)
+        return 1
+        // TODO
+        // val item = files.find { it.rows.contains(file) }
+        // return getAbsolutePosition(files.indexOf(item), item?.files?.indexOf(file) ?: 0)
     }
 
     override fun swapDirectory(
@@ -289,7 +410,7 @@ class GalleryAdapter(
     }
 
     override fun getFilesCount(): Int {
-        return files.fold(0) { acc, item -> acc + item.files.size }
+        return files.fold(0) { acc, item -> acc + item.rows.size }
     }
 
     @SuppressLint("NotifyDataSetChanged")

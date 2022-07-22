@@ -22,12 +22,7 @@
 
 package com.owncloud.android.ui.adapter
 
-import android.widget.ImageView
 import com.afollestad.sectionedrecyclerview.SectionedViewHolder
-import com.owncloud.android.databinding.GridImageBinding
+import com.owncloud.android.databinding.GalleryRowBinding
 
-class GalleryItemViewHolder(val binding: GridImageBinding) :
-    SectionedViewHolder(binding.root) {
-    val thumbnail: ImageView
-        get() = binding.thumbnail
-}
+class GalleryRowHolder(val binding: GalleryRowBinding) : SectionedViewHolder(binding.root)

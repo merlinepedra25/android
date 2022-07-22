@@ -122,7 +122,7 @@ class GalleryFastScrollViewHelper(
         val adapter = mView.adapter as GalleryAdapter
         if (adapter.sectionCount == 0) return 0
         // in each section, the final row may contain less than the max of items
-        return adapter.files.sumOf { itemCountToRowCount(it.files.size) }
+        return adapter.files.sumOf { itemCountToRowCount(it.rows.size) }
     }
 
     /**
@@ -140,7 +140,7 @@ class GalleryFastScrollViewHelper(
 
         val seenRowsInPreviousSections = adapter.files
             .subList(0, min(itemCoord.section(), adapter.files.size))
-            .sumOf { itemCountToRowCount(it.files.size) }
+            .sumOf { itemCountToRowCount(it.rows.size) }
         val seenRowsInThisSection = if (isHeader) 0 else itemCountToRowCount(itemCoord.relativePos())
         val totalSeenRows = seenRowsInPreviousSections + seenRowsInThisSection
 
@@ -208,7 +208,7 @@ class GalleryFastScrollViewHelper(
      */
     private fun getSectionStartOffsets(files: List<GalleryItems>): List<Int> {
         val sectionHeights =
-            files.map { headerHeight + itemCountToRowCount(it.files.size) * rowHeight }
+            files.map { headerHeight + itemCountToRowCount(it.rows.size) * rowHeight }
         val sectionStartOffsets = sectionHeights.indices.map { i ->
             when (i) {
                 0 -> 0
