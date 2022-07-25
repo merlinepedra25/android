@@ -26,19 +26,16 @@ package com.owncloud.android.ui.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
-import androidx.core.content.res.ResourcesCompat
 import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter
 import com.afollestad.sectionedrecyclerview.SectionedViewHolder
 import com.nextcloud.client.account.User
 import com.nextcloud.client.preferences.AppPreferences
-import com.owncloud.android.R
 import com.owncloud.android.databinding.GalleryHeaderBinding
 import com.owncloud.android.databinding.GalleryRowBinding
 import com.owncloud.android.datamodel.FileDataStorageManager
@@ -46,13 +43,13 @@ import com.owncloud.android.datamodel.GalleryItems
 import com.owncloud.android.datamodel.GalleryRow
 import com.owncloud.android.datamodel.OCFile
 import com.owncloud.android.datamodel.ThumbnailsCacheManager
+import com.owncloud.android.lib.common.network.ImageDimension
 import com.owncloud.android.lib.common.utils.Log_OC
 import com.owncloud.android.ui.activity.ComponentsGetter
 import com.owncloud.android.ui.fragment.GalleryFragment
 import com.owncloud.android.ui.fragment.GalleryFragmentBottomSheetDialog
 import com.owncloud.android.ui.fragment.SearchType
 import com.owncloud.android.ui.interfaces.OCFileListFragmentInterface
-import com.owncloud.android.utils.BitmapUtils
 import com.owncloud.android.utils.DisplayUtils
 import com.owncloud.android.utils.FileSortOrder
 import com.owncloud.android.utils.MimeTypeUtil
@@ -75,9 +72,11 @@ class GalleryAdapter(
     var files: List<GalleryItems> = mutableListOf()
     private val ocFileListDelegate: OCFileListDelegate
     private var storageManager: FileDataStorageManager
+    private val defaultThumbnailSize = ThumbnailsCacheManager.getThumbnailDimension()
 
     init {
         storageManager = transferServiceGetter.storageManager
+
 
         ocFileListDelegate = OCFileListDelegate(
             context,
@@ -128,36 +127,12 @@ class GalleryAdapter(
                     .toFloat()
             val summedWidth = row.getSummedWidth().toFloat()
 
-            var thumbnail1 = ThumbnailsCacheManager.getBitmapFromDiskCache(
-                ThumbnailsCacheManager.PREFIX_RESIZED_IMAGE + row.files[0].remoteId
-            )
+            val thumbnail1 = row.files[0].imageDimension ?: ImageDimension(defaultThumbnailSize, defaultThumbnailSize)
 
-            if (thumbnail1 == null) {
-                val drawable = ResourcesCompat.getDrawable(
-                    context.resources,
-                    R.drawable.file_image,
-                    null
-                )
-                val px = ThumbnailsCacheManager.getThumbnailDimension()
-                thumbnail1 = BitmapUtils.drawableToBitmap(drawable, px, px)
-            }
-
-            var thumbnail2: Bitmap? = null
-
-            if (row.files.size > 1) {
-                thumbnail2 = ThumbnailsCacheManager.getBitmapFromDiskCache(
-                    ThumbnailsCacheManager.PREFIX_RESIZED_IMAGE + row.files[1].remoteId
-                )
-            }
-
-            if (thumbnail2 == null) {
-                val drawable = ResourcesCompat.getDrawable(
-                    context.resources,
-                    R.drawable.file_image,
-                    null
-                )
-                val px = ThumbnailsCacheManager.getThumbnailDimension()
-                thumbnail2 = BitmapUtils.drawableToBitmap(drawable, px, px)
+            val thumbnail2 = if (row.files.size > 1) {
+                row.files[1].imageDimension ?: ImageDimension(defaultThumbnailSize, defaultThumbnailSize)
+            } else {
+                ImageDimension(defaultThumbnailSize, defaultThumbnailSize)
             }
 
             // first adjust all thumbnails to max height
@@ -201,7 +176,7 @@ class GalleryAdapter(
 
             rowHolder.binding.thumbnail1.layoutParams.height = adjustedHeight1
             rowHolder.binding.thumbnail1.layoutParams.width = adjustedWidth1
-            rowHolder.binding.thumbnail1.invalidate()
+            //rowHolder.binding.thumbnail1.invalidate()
 
             if (row.files.size > 1) {
                 val adjustedHeight2 = (newHeight2 * shrinkRatio).toInt()
@@ -215,7 +190,7 @@ class GalleryAdapter(
                 )
                 rowHolder.binding.thumbnail2.layoutParams.height = adjustedHeight2
                 rowHolder.binding.thumbnail2.layoutParams.width = adjustedWidth2
-                rowHolder.binding.thumbnail2.invalidate()
+                //rowHolder.binding.thumbnail2.invalidate()
 
                 Log_OC.d(
                     "Gallery_thumbnail",
@@ -323,7 +298,7 @@ class GalleryAdapter(
     fun map(list: List<OCFile>): List<GalleryRow> {
         return list.withIndex()
             .groupBy { it.index / 2 }
-            .map { entry -> GalleryRow(entry.value.map { it.value }) }
+            .map { entry -> GalleryRow(entry.value.map { it.value }, defaultThumbnailSize, defaultThumbnailSize) }
     }
 
     @SuppressLint("NotifyDataSetChanged")

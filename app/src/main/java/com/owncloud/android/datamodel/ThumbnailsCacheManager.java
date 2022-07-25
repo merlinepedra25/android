@@ -53,6 +53,7 @@ import com.owncloud.android.R;
 import com.owncloud.android.lib.common.OwnCloudAccount;
 import com.owncloud.android.lib.common.OwnCloudClient;
 import com.owncloud.android.lib.common.OwnCloudClientManagerFactory;
+import com.owncloud.android.lib.common.network.ImageDimension;
 import com.owncloud.android.lib.common.operations.RemoteOperation;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.lib.resources.files.model.ServerFileInterface;
@@ -322,7 +323,7 @@ public final class ThumbnailsCacheManager {
                 Log_OC.e(TAG, "Out of memory");
             } catch (Throwable t) {
                 // the app should never break due to a problem with thumbnails
-                Log_OC.e(TAG, "Generation of thumbnail for " + file + " failed", t);
+                Log_OC.e(TAG, "Generation of gallery image for " + file + " failed", t);
             }
 
             return thumbnail;
@@ -1384,7 +1385,6 @@ public final class ThumbnailsCacheManager {
                     thumbnail = addThumbnailToCache(imageKey, bitmap, file.getStoragePath(), pxW, pxH);
 
                     file.setUpdateThumbnailNeeded(false);
-                    storageManager.saveFile(file);
                 }
 
             } else {
@@ -1395,6 +1395,7 @@ public final class ThumbnailsCacheManager {
                         String uri = mClient.getBaseUri() + "/index.php/core/preview.png?file="
                             + URLEncoder.encode(file.getRemotePath())
                             + "&x=" + pxW + "&y=" + pxH + "&a=1&mode=cover&forceIcon=0";
+                        Log_OC.d(TAG, "generate resized image: " + file.getFileName() + " URI: " + uri);
                         getMethod = new GetMethod(uri);
 
                         int status = mClient.executeMethod(getMethod);
@@ -1412,7 +1413,7 @@ public final class ThumbnailsCacheManager {
 
                         // Add thumbnail to cache
                         if (thumbnail != null) {
-                            Log_OC.d(TAG, "add thumbnail to cache: " + file.getFileName());
+                            Log_OC.d(TAG, "add resized image to cache: " + file.getFileName());
                             addBitmapToCache(imageKey, thumbnail);
                         }
 
@@ -1425,9 +1426,14 @@ public final class ThumbnailsCacheManager {
                     }
                 }
             }
+
+            // resized dimensions
+            if (thumbnail != null) {
+                file.setImageDimension(new ImageDimension(thumbnail.getWidth(), thumbnail.getHeight()));
+                storageManager.saveFile(file);
+            }
         }
 
         return thumbnail;
-
     }
 }

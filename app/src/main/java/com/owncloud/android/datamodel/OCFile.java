@@ -30,6 +30,7 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 
 import com.owncloud.android.R;
+import com.owncloud.android.lib.common.network.ImageDimension;
 import com.owncloud.android.lib.common.network.WebdavEntry;
 import com.owncloud.android.lib.common.network.WebdavUtils;
 import com.owncloud.android.lib.common.utils.Log_OC;
@@ -110,6 +111,7 @@ public class OCFile implements Parcelable, Comparable<OCFile>, ServerFileInterfa
     private long lockTimeout;
     @Nullable
     private String lockToken;
+    private ImageDimension imageDimension;
 
     /**
      * URI to the local path of the file contents, if stored in the device; cached after first call to {@link
@@ -947,5 +949,14 @@ public class OCFile implements Parcelable, Comparable<OCFile>, ServerFileInterfa
 
     public void setLockToken(@Nullable String lockToken) {
         this.lockToken = lockToken;
+    }
+
+    public void setImageDimension(ImageDimension imageDimension) {
+        this.imageDimension = imageDimension;
+    }
+
+    public @Nullable
+    ImageDimension getImageDimension() {
+        return imageDimension;
     }
 }

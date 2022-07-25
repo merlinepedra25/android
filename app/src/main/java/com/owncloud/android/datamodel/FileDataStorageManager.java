@@ -43,6 +43,7 @@ import com.google.gson.JsonSyntaxException;
 import com.nextcloud.client.account.User;
 import com.owncloud.android.MainApp;
 import com.owncloud.android.db.ProviderMeta.ProviderTableMeta;
+import com.owncloud.android.lib.common.network.ImageDimension;
 import com.owncloud.android.lib.common.network.WebdavEntry;
 import com.owncloud.android.lib.common.operations.RemoteOperationResult;
 import com.owncloud.android.lib.common.utils.Log_OC;
@@ -509,6 +510,7 @@ public class FileDataStorageManager {
         cv.put(ProviderTableMeta.FILE_LOCK_TIMEOUT, file.getLockTimeout());
         cv.put(ProviderTableMeta.FILE_LOCK_TOKEN, file.getLockToken());
         cv.put(ProviderTableMeta.FILE_MODIFIED, file.getModificationTimestamp());
+        cv.put(ProviderTableMeta.FILE_METADATA_SIZE, new Gson().toJson(file.getImageDimension()));
 
         return cv;
     }
@@ -1034,6 +1036,8 @@ public class FileDataStorageManager {
                     ocFile.setSharees(new ArrayList<>());
                 }
             }
+            String metadataSize = cursor.getString(cursor.getColumnIndexOrThrow(ProviderTableMeta.FILE_METADATA_SIZE));
+            ocFile.setImageDimension(new Gson().fromJson(metadataSize, ImageDimension.class));
         }
 
         return ocFile;

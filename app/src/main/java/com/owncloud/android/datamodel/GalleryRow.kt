@@ -22,20 +22,12 @@
 
 package com.owncloud.android.datamodel
 
-data class GalleryRow(val files: List<OCFile>) {
+data class GalleryRow(val files: List<OCFile>, val defaultHeight: Int, val defaultWidth: Int) {
     fun getMaxHeight(): Int {
-        return files.map {
-            ThumbnailsCacheManager.getBitmapFromDiskCache(
-                ThumbnailsCacheManager.PREFIX_RESIZED_IMAGE + it.remoteId
-            )?.height ?: 0
-        }.maxOrNull() ?: 0
+        return files.map { it.imageDimension?.height ?: defaultHeight }.maxOrNull() ?: 0
     }
 
     fun getSummedWidth(): Int {
-        return files.sumOf {
-            ThumbnailsCacheManager.getBitmapFromDiskCache(
-                ThumbnailsCacheManager.PREFIX_RESIZED_IMAGE + it.remoteId
-            )?.width ?: 0
-        }
+        return files.sumOf { it.imageDimension?.width ?: defaultWidth }
     }
 }
