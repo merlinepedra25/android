@@ -1037,7 +1037,11 @@ public class FileDataStorageManager {
                 }
             }
             String metadataSize = cursor.getString(cursor.getColumnIndexOrThrow(ProviderTableMeta.FILE_METADATA_SIZE));
-            ocFile.setImageDimension(new Gson().fromJson(metadataSize, ImageDimension.class));
+            ImageDimension imageDimension = new Gson().fromJson(metadataSize, ImageDimension.class);
+
+            if (imageDimension != null) {
+                ocFile.setImageDimension(imageDimension);
+            }
         }
 
         return ocFile;

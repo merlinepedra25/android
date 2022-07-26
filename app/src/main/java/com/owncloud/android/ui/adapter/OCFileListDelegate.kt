@@ -108,6 +108,8 @@ class OCFileListDelegate(
             themeColorUtils,
             themeDrawableUtils
         )
+
+        imageView.setOnClickListener { ocFileListFragmentInterface.onItemClicked(file) }
     }
 
     fun bindGridViewHolder(

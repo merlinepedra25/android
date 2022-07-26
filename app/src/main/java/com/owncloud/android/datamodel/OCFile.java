@@ -504,6 +504,9 @@ public class OCFile implements Parcelable, Comparable<OCFile>, ServerFileInterfa
         lockTimestamp = 0;
         lockTimeout = 0;
         lockToken = null;
+
+        float size = (float) ThumbnailsCacheManager.getThumbnailDimension();
+        imageDimension = new ImageDimension(size, size);
     }
 
     /**
@@ -951,12 +954,11 @@ public class OCFile implements Parcelable, Comparable<OCFile>, ServerFileInterfa
         this.lockToken = lockToken;
     }
 
-    public void setImageDimension(ImageDimension imageDimension) {
+    public void setImageDimension(@NonNull ImageDimension imageDimension) {
         this.imageDimension = imageDimension;
     }
 
-    public @Nullable
-    ImageDimension getImageDimension() {
+    public ImageDimension getImageDimension() {
         return imageDimension;
     }
 }

@@ -150,7 +150,8 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
                                       preferences,
                                       mContainerActivity,
                                       themeColorUtils,
-                                      themeDrawableUtils);
+                                      themeDrawableUtils,
+                                      columnSize);
 
         setRecyclerViewAdapter(mAdapter);
 
@@ -175,6 +176,8 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             columnSize = maxColumnSizePortrait;
         }
+        mAdapter.changeColumn(columnSize);
+        showAllGalleryItems();
     }
 
     public int getColumnsCount() {

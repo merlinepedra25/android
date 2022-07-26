@@ -280,19 +280,22 @@ public final class ThumbnailsCacheManager {
         private String imageKey;
         private ThumbnailGenerationTask.Listener listener;
         private List<GalleryImageGenerationTask> asyncTasks;
+        private int backgroundColor;
 
         public GalleryImageGenerationTask(
             ImageView imageView,
             User user,
             FileDataStorageManager storageManager,
             List<GalleryImageGenerationTask> asyncTasks,
-            String imageKey
+            String imageKey,
+            int backgroundColor
                                          ) {
             this.user = user;
             this.storageManager = storageManager;
             imageViewReference = new WeakReference<>(imageView);
             this.asyncTasks = asyncTasks;
             this.imageKey = imageKey;
+            this.backgroundColor = backgroundColor;
         }
 
         public void setListener(ThumbnailGenerationTask.Listener listener) {
@@ -305,28 +308,45 @@ public final class ThumbnailsCacheManager {
 
         @Override
         protected Bitmap doInBackground(Object... params) {
-            Bitmap thumbnail = null;
+            Bitmap thumbnail;
 
             file = (OCFile) params[0];
 
-            try {
-                mClient = OwnCloudClientManagerFactory.getDefaultSingleton().getClientFor(user.toOwnCloudAccount(),
-                                                                                          MainApp.getAppContext());
+            if (file.getRemoteId() != null && file.isPreviewAvailable()) {
+                // Thumbnail in cache?
+                thumbnail = ThumbnailsCacheManager.getBitmapFromDiskCache(
+                    ThumbnailsCacheManager.PREFIX_RESIZED_IMAGE + file.getRemoteId()
+                                                                         );
 
-                thumbnail = doResizedImageInBackground(file, storageManager);
+                if (thumbnail != null && !file.isUpdateThumbnailNeeded()) {
+                    if (MimeTypeUtil.isVideo(file)) {
+                        return ThumbnailsCacheManager.addVideoOverlay(thumbnail);
+                    } else {
+                        return thumbnail;
+                    }
+                } else {
+                    try {
+                        mClient = OwnCloudClientManagerFactory.getDefaultSingleton().getClientFor(user.toOwnCloudAccount(),
+                                                                                                  MainApp.getAppContext());
 
-                if (MimeTypeUtil.isVideo(file) && thumbnail != null) {
-                    thumbnail = addVideoOverlay(thumbnail);
+                        thumbnail = doResizedImageInBackground(file, storageManager);
+
+                        if (MimeTypeUtil.isVideo(file) && thumbnail != null) {
+                            thumbnail = addVideoOverlay(thumbnail);
+                        }
+
+                    } catch (OutOfMemoryError oome) {
+                        Log_OC.e(TAG, "Out of memory");
+                    } catch (Throwable t) {
+                        // the app should never break due to a problem with thumbnails
+                        Log_OC.e(TAG, "Generation of gallery image for " + file + " failed", t);
+                    }
+
+                    return thumbnail;
                 }
-
-            } catch (OutOfMemoryError oome) {
-                Log_OC.e(TAG, "Out of memory");
-            } catch (Throwable t) {
-                // the app should never break due to a problem with thumbnails
-                Log_OC.e(TAG, "Generation of gallery image for " + file + " failed", t);
             }
 
-            return thumbnail;
+            return null;
         }
 
         protected void onPostExecute(Bitmap bitmap) {
@@ -338,6 +358,10 @@ public final class ThumbnailsCacheManager {
                     String tagId = String.valueOf(file.getFileId());
 
                     if (String.valueOf(imageView.getTag()).equals(tagId)) {
+                        if ("image/png".equalsIgnoreCase(file.getMimeType())) {
+                            imageView.setBackgroundColor(backgroundColor);
+                        }
+
                         imageView.setImageBitmap(bitmap);
                     }
                 }
@@ -1394,7 +1418,7 @@ public final class ThumbnailsCacheManager {
                     try {
                         String uri = mClient.getBaseUri() + "/index.php/core/preview.png?file="
                             + URLEncoder.encode(file.getRemotePath())
-                            + "&x=" + pxW + "&y=" + pxH + "&a=1&mode=cover&forceIcon=0";
+                            + "&x=" + (pxW / 2) + "&y=" + (pxH / 2) + "&a=1&mode=cover&forceIcon=0";
                         Log_OC.d(TAG, "generate resized image: " + file.getFileName() + " URI: " + uri);
                         getMethod = new GetMethod(uri);
 

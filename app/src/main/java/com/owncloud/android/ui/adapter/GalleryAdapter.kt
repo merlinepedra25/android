@@ -29,7 +29,6 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
 import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter
@@ -43,8 +42,6 @@ import com.owncloud.android.datamodel.GalleryItems
 import com.owncloud.android.datamodel.GalleryRow
 import com.owncloud.android.datamodel.OCFile
 import com.owncloud.android.datamodel.ThumbnailsCacheManager
-import com.owncloud.android.lib.common.network.ImageDimension
-import com.owncloud.android.lib.common.utils.Log_OC
 import com.owncloud.android.ui.activity.ComponentsGetter
 import com.owncloud.android.ui.fragment.GalleryFragment
 import com.owncloud.android.ui.fragment.GalleryFragmentBottomSheetDialog
@@ -67,7 +64,8 @@ class GalleryAdapter(
     preferences: AppPreferences,
     transferServiceGetter: ComponentsGetter,
     themeColorUtils: ThemeColorUtils,
-    themeDrawableUtils: ThemeDrawableUtils
+    themeDrawableUtils: ThemeDrawableUtils,
+    var columns: Int
 ) : SectionedRecyclerViewAdapter<SectionedViewHolder>(), CommonOCFileListAdapterInterface, PopupTextProvider {
     var files: List<GalleryItems> = mutableListOf()
     private val ocFileListDelegate: OCFileListDelegate
@@ -76,7 +74,6 @@ class GalleryAdapter(
 
     init {
         storageManager = transferServiceGetter.storageManager
-
 
         ocFileListDelegate = OCFileListDelegate(
             context,
@@ -107,7 +104,10 @@ class GalleryAdapter(
             )
         } else {
             GalleryRowHolder(
-                GalleryRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                GalleryRowBinding.inflate(LayoutInflater.from(parent.context), parent, false),
+                defaultThumbnailSize.toFloat(),
+                ocFileListDelegate,
+                context
             )
         }
     }
@@ -120,93 +120,7 @@ class GalleryAdapter(
     ) {
         if (holder != null) {
             val rowHolder = holder as GalleryRowHolder
-            val row = files[section].rows[relativePosition]
-
-            val screenWidth =
-                DisplayUtils.convertDpToPixel(context.resources.configuration.screenWidthDp.toFloat(), context)
-                    .toFloat()
-            val summedWidth = row.getSummedWidth().toFloat()
-
-            val thumbnail1 = row.files[0].imageDimension ?: ImageDimension(defaultThumbnailSize, defaultThumbnailSize)
-
-            val thumbnail2 = if (row.files.size > 1) {
-                row.files[1].imageDimension ?: ImageDimension(defaultThumbnailSize, defaultThumbnailSize)
-            } else {
-                ImageDimension(defaultThumbnailSize, defaultThumbnailSize)
-            }
-
-            // first adjust all thumbnails to max height
-            val height1 = thumbnail1.height
-            val width1 = thumbnail1.width
-            val oldAspect1 = height1 / width1.toFloat()
-
-            val scaleFactor1 = row.getMaxHeight().toFloat() / height1
-            val newHeight1 = height1 * scaleFactor1
-            val newWidth1 = width1.toFloat() * scaleFactor1
-            val newAspect1 = height1 / width1.toFloat() // must be same as oldAspect
-
-            val height2 = thumbnail2.height
-            val width2 = thumbnail2.width
-            val oldAspect2 = height2 / width2.toFloat()
-
-            val scaleFactor2 = row.getMaxHeight().toFloat() / height2
-            val newHeight2 = height2 * scaleFactor2
-            val newWidth2 = width2.toFloat() * scaleFactor2
-            val newAspect2 = height2 / width2.toFloat() // must be same as oldAspect
-
-            Log_OC.d(
-                "Gallery_thumbnail",
-                "old: $width1 x $height1 new: $newWidth1 x $newHeight1 aspectOld: $oldAspect1 aspectNew: $newAspect1"
-            )
-            Log_OC.d(
-                "Gallery_thumbnail",
-                "old: $width2 x $height2 new: $newWidth2 x $newHeight2 aspectOld: $oldAspect2 aspectNew: $newAspect2"
-            )
-
-            val newSummedWidth = newWidth1 + newWidth2
-            val shrinkRatio = screenWidth / newSummedWidth
-
-            val adjustedHeight1 = (newHeight1 * shrinkRatio).toInt()
-            val adjustedWidth1 = (newWidth1 * shrinkRatio).toInt()
-
-            ocFileListDelegate.bindGalleryRowThumbnail(
-                rowHolder.binding.thumbnail1,
-                row.files[0]
-            )
-
-            rowHolder.binding.thumbnail1.layoutParams.height = adjustedHeight1
-            rowHolder.binding.thumbnail1.layoutParams.width = adjustedWidth1
-            //rowHolder.binding.thumbnail1.invalidate()
-
-            if (row.files.size > 1) {
-                val adjustedHeight2 = (newHeight2 * shrinkRatio).toInt()
-                val adjustedWidth2 = (newWidth2 * shrinkRatio).toInt()
-
-                val sumAdjustedWith = adjustedWidth1 + adjustedWidth1
-
-                ocFileListDelegate.bindGalleryRowThumbnail(
-                    rowHolder.binding.thumbnail2,
-                    row.files[1]
-                )
-                rowHolder.binding.thumbnail2.layoutParams.height = adjustedHeight2
-                rowHolder.binding.thumbnail2.layoutParams.width = adjustedWidth2
-                //rowHolder.binding.thumbnail2.invalidate()
-
-                Log_OC.d(
-                    "Gallery_thumbnail",
-                    "Screen width: $screenWidth shrinkRatio: $shrinkRatio maxHeight: ${row.getMaxHeight()}"
-                )
-                Log_OC.d(
-                    "Gallery_thumbnail",
-                    "file1: $adjustedWidth1 x $adjustedHeight1 aspectOld: $oldAspect1 aspectNew: $newAspect1"
-                )
-                Log_OC.d(
-                    "Gallery_thumbnail",
-                    "file2: $adjustedWidth2 x $adjustedHeight2 aspectOld: $oldAspect2 aspectNew: $newAspect2"
-                )
-            } else {
-                rowHolder.binding.thumbnail2.visibility = View.GONE
-            }
+            rowHolder.bind(files[section].rows[relativePosition])
         }
     }
 
@@ -289,16 +203,16 @@ class GalleryAdapter(
 
         files = finalSortedList
             .groupBy { firstOfMonth(it.modificationTimestamp) }
-            .map { GalleryItems(it.key, map(it.value)) }
+            .map { GalleryItems(it.key, transformToRows(it.value)) }
             .sortedBy { it.date }.reversed()
 
         Handler(Looper.getMainLooper()).post { notifyDataSetChanged() }
     }
 
-    fun map(list: List<OCFile>): List<GalleryRow> {
-        return list.withIndex()
-            .groupBy { it.index / 2 }
-            .map { entry -> GalleryRow(entry.value.map { it.value }, defaultThumbnailSize, defaultThumbnailSize) }
+    private fun transformToRows(list: List<OCFile>): List<GalleryRow> {
+        return list
+            .chunked(columns)
+            .map { entry -> GalleryRow(entry, defaultThumbnailSize, defaultThumbnailSize) }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -401,5 +315,9 @@ class GalleryAdapter(
     @VisibleForTesting
     fun addFiles(items: List<GalleryItems>) {
         files = items
+    }
+
+    fun changeColumn(newColumn: Int) {
+        columns = newColumn
     }
 }
