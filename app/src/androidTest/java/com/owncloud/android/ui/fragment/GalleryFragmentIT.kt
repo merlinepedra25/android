@@ -32,6 +32,7 @@ import com.owncloud.android.AbstractIT
 import com.owncloud.android.datamodel.OCFile
 import com.owncloud.android.datamodel.ThumbnailsCacheManager
 import com.owncloud.android.datamodel.ThumbnailsCacheManager.PREFIX_RESIZED_IMAGE
+import com.owncloud.android.lib.common.network.ImageDimension
 import com.owncloud.android.lib.common.utils.Log_OC
 import org.junit.After
 import org.junit.Assert.assertNotNull
@@ -54,12 +55,14 @@ class GalleryFragmentIT : AbstractIT() {
         createImage(1, true, 700, 300)
         createImage(2, true, 500, 300)
 
-        createImage(3, true, 300, 400)
-        createImage(4, true, 600, 800)
+        // createImage(3, true, 300, 400)
+        // createImage(4, true, 600, 800)
+        //
+        // createImage(5, true, 700, 300)
+        // createImage(6, true, 300, 400)
 
-        createImage(5, true, 700, 300)
-        createImage(6, true, 300, 400)
-        
+        createImage(7, true, 300, 400)
+
         // for (i in 7..50) {
         //     createImage(i)
         // }
@@ -81,11 +84,14 @@ class GalleryFragmentIT : AbstractIT() {
     }
 
     private fun createImage(int: Int, createPreview: Boolean = true, width: Int? = null, height: Int? = null) {
+        val defaultSize = ThumbnailsCacheManager.getThumbnailDimension().toFloat()
         val file = OCFile("/$int.png").apply {
+            fileId = int.toLong()
             remoteId = "$int"
             mimeType = "image/png"
             isPreviewAvailable = true
             modificationTimestamp = (1658475504 + int.toLong()) * 1000
+            imageDimension = ImageDimension(width?.toFloat() ?: defaultSize, height?.toFloat() ?: defaultSize)
             storageManager.saveFile(this)
         }
 
