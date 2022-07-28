@@ -278,7 +278,7 @@ public final class ThumbnailsCacheManager {
         private final WeakReference<ImageView> imageViewReference;
         private OCFile file;
         private String imageKey;
-        private ThumbnailGenerationTask.Listener listener;
+        private GalleryListener listener;
         private List<GalleryImageGenerationTask> asyncTasks;
         private int backgroundColor;
 
@@ -298,7 +298,7 @@ public final class ThumbnailsCacheManager {
             this.backgroundColor = backgroundColor;
         }
 
-        public void setListener(ThumbnailGenerationTask.Listener listener) {
+        public void setListener(GalleryImageGenerationTask.GalleryListener listener) {
             this.listener = listener;
         }
 
@@ -319,6 +319,18 @@ public final class ThumbnailsCacheManager {
                                                                          );
 
                 if (thumbnail != null && !file.isUpdateThumbnailNeeded()) {
+                    Float size = (float) ThumbnailsCacheManager.getThumbnailDimension();
+
+                    // resized dimensions
+                    if (file.getImageDimension() == null ||
+                        file.getImageDimension().getWidth() != size ||
+                        file.getImageDimension().getHeight() != size) {
+                        file.setImageDimension(new ImageDimension(thumbnail.getWidth(), thumbnail.getHeight()));
+                        storageManager.saveFile(file);
+                        listener.onNewGalleryImage();
+                    }
+
+
                     if (MimeTypeUtil.isVideo(file)) {
                         return ThumbnailsCacheManager.addVideoOverlay(thumbnail);
                     } else {
@@ -330,6 +342,7 @@ public final class ThumbnailsCacheManager {
                                                                                                   MainApp.getAppContext());
 
                         thumbnail = doResizedImageInBackground(file, storageManager);
+                        listener.onNewGalleryImage();
 
                         if (MimeTypeUtil.isVideo(file) && thumbnail != null) {
                             thumbnail = addVideoOverlay(thumbnail);
@@ -363,6 +376,7 @@ public final class ThumbnailsCacheManager {
                         }
 
                         imageView.setImageBitmap(bitmap);
+                        imageView.invalidate();
                     }
                 }
 
@@ -378,6 +392,14 @@ public final class ThumbnailsCacheManager {
             if (asyncTasks != null) {
                 asyncTasks.remove(this);
             }
+        }
+
+        public interface GalleryListener {
+            void onSuccess();
+
+            void onNewGalleryImage();
+
+            void onError();
         }
     }
 

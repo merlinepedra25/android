@@ -76,6 +76,7 @@ import com.owncloud.android.lib.common.OwnCloudAccount;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.ui.TextDrawable;
 import com.owncloud.android.ui.activity.FileDisplayActivity;
+import com.owncloud.android.ui.adapter.GalleryRowHolder;
 import com.owncloud.android.ui.dialog.SortingOrderDialogFragment;
 import com.owncloud.android.ui.events.SearchEvent;
 import com.owncloud.android.ui.fragment.OCFileListFragment;
@@ -859,7 +860,8 @@ public final class DisplayUtils {
                                        LoaderImageView shimmerThumbnail,
                                        AppPreferences preferences,
                                        ThemeColorUtils themeColorUtils,
-                                       ThemeDrawableUtils themeDrawableUtils) {
+                                       ThemeDrawableUtils themeDrawableUtils,
+                                       GalleryRowHolder galleryRowHolder) {
 
         // cancel previous generation, if view is re-used
         if (ThumbnailsCacheManager.cancelPotentialThumbnailWork(file, thumbnailView)) {
@@ -897,22 +899,28 @@ public final class DisplayUtils {
                                                                          thumbnail,
                                                                          task);
 
-                if (shimmerThumbnail != null && shimmerThumbnail.getVisibility() == View.GONE) {
+                //   if (shimmerThumbnail != null && shimmerThumbnail.getVisibility() == View.GONE) {
 //                                if (gridView) {
 //                                    configShimmerGridImageSize(shimmerThumbnail, preferences.getGridColumns());
 //                                }
-                    startShimmer(shimmerThumbnail, thumbnailView);
-                }
+                // startShimmer(shimmerThumbnail, thumbnailView);
+                //   }
 
-                task.setListener(new ThumbnailsCacheManager.ThumbnailGenerationTask.Listener() {
+                task.setListener(new ThumbnailsCacheManager.GalleryImageGenerationTask.GalleryListener() {
                     @Override
                     public void onSuccess() {
-                        stopShimmer(shimmerThumbnail, thumbnailView);
+                        galleryRowHolder.getBinding().rowLayout.invalidate();
+                        //stopShimmer(shimmerThumbnail, thumbnailView);
+                    }
+
+                    @Override
+                    public void onNewGalleryImage() {
+                        galleryRowHolder.redraw();
                     }
 
                     @Override
                     public void onError() {
-                        stopShimmer(shimmerThumbnail, thumbnailView);
+                        // stopShimmer(shimmerThumbnail, thumbnailView);
                     }
                 });
 

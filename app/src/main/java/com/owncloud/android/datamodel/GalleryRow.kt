@@ -24,10 +24,10 @@ package com.owncloud.android.datamodel
 
 data class GalleryRow(val files: List<OCFile>, val defaultHeight: Int, val defaultWidth: Int) {
     fun getMaxHeight(): Float {
-        return files.map { it.imageDimension.height }.maxOrNull() ?: 0f
+        return files.map { it.imageDimension?.height ?: defaultHeight.toFloat() }.maxOrNull() ?: 0f
     }
 
     fun getSummedWidth(): Float {
-        return files.map { it.imageDimension.width }.sum()
+        return files.map { it.imageDimension?.width ?: defaultWidth.toFloat() }.sum()
     }
 }

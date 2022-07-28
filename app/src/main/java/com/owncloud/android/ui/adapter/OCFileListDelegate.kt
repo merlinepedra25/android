@@ -92,7 +92,7 @@ class OCFileListDelegate(
         checkedFiles.clear()
     }
 
-    fun bindGalleryRowThumbnail(imageView: ImageView, file: OCFile) {
+    fun bindGalleryRowThumbnail(imageView: ImageView, file: OCFile, galleryRowHolder: GalleryRowHolder) {
         // thumbnail
         imageView.tag = file.fileId
         DisplayUtils.setGalleryImage(
@@ -106,7 +106,8 @@ class OCFileListDelegate(
             null,
             preferences,
             themeColorUtils,
-            themeDrawableUtils
+            themeDrawableUtils,
+            galleryRowHolder
         )
 
         imageView.setOnClickListener { ocFileListFragmentInterface.onItemClicked(file) }

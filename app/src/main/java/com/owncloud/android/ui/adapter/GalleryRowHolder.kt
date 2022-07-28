@@ -25,11 +25,15 @@ package com.owncloud.android.ui.adapter
 import android.content.Context
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.core.view.get
 import com.afollestad.sectionedrecyclerview.SectionedViewHolder
 import com.owncloud.android.R
 import com.owncloud.android.databinding.GalleryRowBinding
+import com.owncloud.android.datamodel.FileDataStorageManager
 import com.owncloud.android.datamodel.GalleryRow
+import com.owncloud.android.datamodel.ThumbnailsCacheManager
 import com.owncloud.android.lib.common.network.ImageDimension
+import com.owncloud.android.utils.BitmapUtils
 import com.owncloud.android.utils.DisplayUtils
 
 class GalleryRowHolder(
@@ -37,10 +41,38 @@ class GalleryRowHolder(
     private val defaultThumbnailSize: Float,
     private val ocFileListDelegate: OCFileListDelegate,
     val columns: Int,
-    val context: Context
+    val context: Context,
+    val storageManager: FileDataStorageManager,
+    val galleryAdapter: GalleryAdapter
 ) : SectionedViewHolder(binding.root) {
+
+    lateinit var currentRow: GalleryRow
+
     fun bind(row: GalleryRow) {
-        binding.rowLayout.removeAllViews()
+        currentRow = row
+
+        // re-use existing ones
+        while (binding.rowLayout.childCount < row.files.size) {
+            ImageView(context).apply {
+                setImageDrawable(
+                    ThumbnailsCacheManager.AsyncGalleryImageDrawable(
+                        context.resources,
+                        BitmapUtils.drawableToBitmap(
+                            resources.getDrawable(R.drawable.file_image),
+                            defaultThumbnailSize.toInt(),
+                            defaultThumbnailSize.toInt()
+                        ),
+                        null
+                    )
+                )
+                binding.rowLayout.addView(this)
+            }
+        }
+
+        if (binding.rowLayout.childCount > row.files.size) {
+            binding.rowLayout.removeViewsInLayout(row.files.size - 1, (binding.rowLayout.childCount - row.files.size))
+        }
+        // binding.rowLayout.removeAllViews()
 
         val screenWidth =
             DisplayUtils.convertDpToPixel(context.resources.configuration.screenWidthDp.toFloat(), context)
@@ -63,9 +95,7 @@ class GalleryRowHolder(
                 val newWidth1 = width1.toFloat() * scaleFactor1
                 val newAspect1 = height1 / width1.toFloat() // must be same as oldAspect
 
-                file.imageDimension.height = newHeight1
-                file.imageDimension.width = newWidth1
-
+                file.setImageDimension(ImageDimension(newWidth1, newHeight1))
 
                 newSummedWidth += newWidth1
             }
@@ -80,31 +110,41 @@ class GalleryRowHolder(
             val file = indexedFile.value
             val index = indexedFile.index
 
-            val adjustedHeight1 = (file.imageDimension.height * shrinkRatio).toInt()
-            val adjustedWidth1 = (file.imageDimension.width * shrinkRatio).toInt()
+            val adjustedHeight1 = ((file.imageDimension?.height ?: defaultThumbnailSize) * shrinkRatio).toInt()
+            val adjustedWidth1 = ((file.imageDimension?.width ?: defaultThumbnailSize) * shrinkRatio).toInt()
 
-            val thumbnail = ImageView(context)
-            thumbnail.setImageDrawable(context.getDrawable(R.drawable.file_image))
+            // re-use existing one
+            val thumbnail = binding.rowLayout.get(index) as ImageView
+            //  thumbnail.setImageDrawable(context.getDrawable(R.drawable.file_image))
             thumbnail.adjustViewBounds = true
 
-            binding.rowLayout.addView(thumbnail)
 
             ocFileListDelegate.bindGalleryRowThumbnail(
                 thumbnail,
-                file
+                file,
+                this
             )
 
             val params = LinearLayout.LayoutParams(adjustedWidth1, adjustedHeight1)
 
-            if (index == 0) {
+            if (index < (row.files.size - 1)) {
                 params.setMargins(0, 0, 5, 5)
             } else {
                 params.setMargins(0, 0, 0, 5)
             }
 
+
             thumbnail.layoutParams = params
-            // thumbnail.layoutParams.height = adjustedHeight1
-            // thumbnail.layoutParams.width = adjustedWidth1
+            thumbnail.layoutParams.height = adjustedHeight1
+            thumbnail.layoutParams.width = adjustedWidth1
         }
+    }
+
+    fun redraw() {
+        // currentRow.files.map { 
+        //     it.imageDimension = storageManager.getFileById(it.fileId)?.imageDimension
+        // }
+        //bind(currentRow)
+        // galleryAdapter.notifyDataSetChanged()
     }
 }

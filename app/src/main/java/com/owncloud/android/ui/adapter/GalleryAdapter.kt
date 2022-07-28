@@ -108,7 +108,9 @@ class GalleryAdapter(
                 defaultThumbnailSize.toFloat(),
                 ocFileListDelegate,
                 columns,
-                context
+                context,
+                storageManager,
+                this
             )
         }
     }
