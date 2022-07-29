@@ -281,6 +281,7 @@ public final class ThumbnailsCacheManager {
         private GalleryListener listener;
         private List<GalleryImageGenerationTask> asyncTasks;
         private int backgroundColor;
+        private boolean newImage = false;
 
         public GalleryImageGenerationTask(
             ImageView imageView,
@@ -327,9 +328,7 @@ public final class ThumbnailsCacheManager {
                         file.getImageDimension().getHeight() != size) {
                         file.setImageDimension(new ImageDimension(thumbnail.getWidth(), thumbnail.getHeight()));
                         storageManager.saveFile(file);
-                        listener.onNewGalleryImage();
                     }
-
 
                     if (MimeTypeUtil.isVideo(file)) {
                         return ThumbnailsCacheManager.addVideoOverlay(thumbnail);
@@ -342,7 +341,7 @@ public final class ThumbnailsCacheManager {
                                                                                                   MainApp.getAppContext());
 
                         thumbnail = doResizedImageInBackground(file, storageManager);
-                        listener.onNewGalleryImage();
+                        newImage = true;
 
                         if (MimeTypeUtil.isVideo(file) && thumbnail != null) {
                             thumbnail = addVideoOverlay(thumbnail);
@@ -375,6 +374,9 @@ public final class ThumbnailsCacheManager {
                             imageView.setBackgroundColor(backgroundColor);
                         }
 
+                        if (newImage && listener != null) {
+                            listener.onNewGalleryImage();
+                        }
                         imageView.setImageBitmap(bitmap);
                         imageView.invalidate();
                     }

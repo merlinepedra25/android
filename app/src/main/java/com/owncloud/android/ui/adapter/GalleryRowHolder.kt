@@ -40,7 +40,6 @@ class GalleryRowHolder(
     val binding: GalleryRowBinding,
     private val defaultThumbnailSize: Float,
     private val ocFileListDelegate: OCFileListDelegate,
-    val columns: Int,
     val context: Context,
     val storageManager: FileDataStorageManager,
     val galleryAdapter: GalleryAdapter
@@ -72,7 +71,6 @@ class GalleryRowHolder(
         if (binding.rowLayout.childCount > row.files.size) {
             binding.rowLayout.removeViewsInLayout(row.files.size - 1, (binding.rowLayout.childCount - row.files.size))
         }
-        // binding.rowLayout.removeAllViews()
 
         val screenWidth =
             DisplayUtils.convertDpToPixel(context.resources.configuration.screenWidthDp.toFloat(), context)
@@ -100,10 +98,23 @@ class GalleryRowHolder(
                 newSummedWidth += newWidth1
             }
 
-            shrinkRatio = screenWidth / newSummedWidth
+            var c = 1f
+            if (galleryAdapter.columns == 5) {
+                if (row.files.size == 2) {
+                    c = 5 / 2f
+                } else if (row.files.size == 3) {
+                    c = 4 / 3f
+                } else if (row.files.size == 4) {
+                    c = 4 / 5f
+                } else if (row.files.size == 5) {
+                    c = 1f
+                }
+            }
+
+            shrinkRatio = (screenWidth / c) / newSummedWidth
         } else {
             val thumbnail1 = row.files[0].imageDimension ?: ImageDimension(defaultThumbnailSize, defaultThumbnailSize)
-            shrinkRatio = (screenWidth / columns) / thumbnail1.width
+            shrinkRatio = (screenWidth / galleryAdapter.columns) / thumbnail1.width
         }
 
         for (indexedFile in row.files.withIndex()) {
@@ -115,7 +126,6 @@ class GalleryRowHolder(
 
             // re-use existing one
             val thumbnail = binding.rowLayout.get(index) as ImageView
-            //  thumbnail.setImageDrawable(context.getDrawable(R.drawable.file_image))
             thumbnail.adjustViewBounds = true
 
 
@@ -141,10 +151,6 @@ class GalleryRowHolder(
     }
 
     fun redraw() {
-        // currentRow.files.map { 
-        //     it.imageDimension = storageManager.getFileById(it.fileId)?.imageDimension
-        // }
-        //bind(currentRow)
-        // galleryAdapter.notifyDataSetChanged()
+        bind(currentRow)
     }
 }

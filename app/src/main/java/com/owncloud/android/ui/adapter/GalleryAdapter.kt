@@ -107,7 +107,6 @@ class GalleryAdapter(
                 GalleryRowBinding.inflate(LayoutInflater.from(parent.context), parent, false),
                 defaultThumbnailSize.toFloat(),
                 ocFileListDelegate,
-                columns,
                 context,
                 storageManager,
                 this

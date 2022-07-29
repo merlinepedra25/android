@@ -393,4 +393,9 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
             }
         });
     }
+
+    @Override
+    protected void setGridViewColumns(float scaleFactor) {
+        // do nothing
+    }
 }
