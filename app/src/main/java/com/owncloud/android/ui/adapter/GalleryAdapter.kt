@@ -239,12 +239,10 @@ class GalleryAdapter(
     }
 
     fun getItem(position: Int): OCFile? {
-        return null
-        // TODO
-        // val itemCoord = getRelativePosition(position)
-        // return files
-        //     .getOrNull(itemCoord.section())?.files
-        //     ?.getOrNull(itemCoord.relativePos())
+        val itemCoord = getRelativePosition(position)
+
+        return files
+            .getOrNull(itemCoord.section())?.rows?.get(itemCoord.relativePos())?.files?.get(0)
     }
 
     override fun isMultiSelect(): Boolean {
@@ -256,10 +254,27 @@ class GalleryAdapter(
     }
 
     override fun getItemPosition(file: OCFile): Int {
-        return 1
-        // TODO
-        // val item = files.find { it.rows.contains(file) }
-        // return getAbsolutePosition(files.indexOf(item), item?.files?.indexOf(file) ?: 0)
+        var item: Int? = null
+        var row: Int? = null
+        for (galleryItem in files.withIndex()) {
+            if (item != null && row != null) {
+                break
+            }
+            for (galleryRow in galleryItem.value.rows.withIndex()) {
+                if (galleryRow.value.files.contains(file)) {
+                    item = galleryItem.index
+                    row = galleryRow.index
+                    break
+                }
+            }
+        }
+
+        // month, row
+        return if (item == null || row == null) {
+            getAbsolutePosition(0, 0)
+        } else {
+            getAbsolutePosition(item, row)
+        }
     }
 
     override fun swapDirectory(

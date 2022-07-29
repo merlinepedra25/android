@@ -120,7 +120,7 @@ public class GalleryFragment extends OCFileListFragment implements GalleryFragme
         getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                // loadMoreWhenEndReached(recyclerView, dy);
+                loadMoreWhenEndReached(recyclerView, dy);
             }
         });
 

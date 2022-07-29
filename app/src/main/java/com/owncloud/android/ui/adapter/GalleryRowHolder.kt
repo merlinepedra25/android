@@ -31,8 +31,8 @@ import com.owncloud.android.R
 import com.owncloud.android.databinding.GalleryRowBinding
 import com.owncloud.android.datamodel.FileDataStorageManager
 import com.owncloud.android.datamodel.GalleryRow
+import com.owncloud.android.datamodel.ImageDimension
 import com.owncloud.android.datamodel.ThumbnailsCacheManager
-import com.owncloud.android.lib.common.network.ImageDimension
 import com.owncloud.android.utils.BitmapUtils
 import com.owncloud.android.utils.DisplayUtils
 
@@ -42,7 +42,7 @@ class GalleryRowHolder(
     private val ocFileListDelegate: OCFileListDelegate,
     val context: Context,
     val storageManager: FileDataStorageManager,
-    val galleryAdapter: GalleryAdapter
+    private val galleryAdapter: GalleryAdapter
 ) : SectionedViewHolder(binding.root) {
 
     lateinit var currentRow: GalleryRow
@@ -57,7 +57,7 @@ class GalleryRowHolder(
                     ThumbnailsCacheManager.AsyncGalleryImageDrawable(
                         context.resources,
                         BitmapUtils.drawableToBitmap(
-                            resources.getDrawable(R.drawable.file_image),
+                            resources.getDrawable(R.drawable.file_image, null),
                             defaultThumbnailSize.toInt(),
                             defaultThumbnailSize.toInt()
                         ),
@@ -80,18 +80,15 @@ class GalleryRowHolder(
         if (row.files.size > 1) {
             var newSummedWidth = 0f
             for (file in row.files) {
-                // TODO change depending on screen orientation
                 // first adjust all thumbnails to max height
                 val thumbnail1 = file.imageDimension ?: ImageDimension(defaultThumbnailSize, defaultThumbnailSize)
 
                 val height1 = thumbnail1.height
                 val width1 = thumbnail1.width
-                val oldAspect1 = height1 / width1.toFloat()
 
-                val scaleFactor1 = row.getMaxHeight().toFloat() / height1
+                val scaleFactor1 = row.getMaxHeight() / height1
                 val newHeight1 = height1 * scaleFactor1
-                val newWidth1 = width1.toFloat() * scaleFactor1
-                val newAspect1 = height1 / width1.toFloat() // must be same as oldAspect
+                val newWidth1 = width1 * scaleFactor1
 
                 file.setImageDimension(ImageDimension(newWidth1, newHeight1))
 
@@ -100,14 +97,19 @@ class GalleryRowHolder(
 
             var c = 1f
             if (galleryAdapter.columns == 5) {
-                if (row.files.size == 2) {
-                    c = 5 / 2f
-                } else if (row.files.size == 3) {
-                    c = 4 / 3f
-                } else if (row.files.size == 4) {
-                    c = 4 / 5f
-                } else if (row.files.size == 5) {
-                    c = 1f
+                when (row.files.size) {
+                    2 -> {
+                        c = 5 / 2f
+                    }
+                    3 -> {
+                        c = 4 / 3f
+                    }
+                    4 -> {
+                        c = 4 / 5f
+                    }
+                    5 -> {
+                        c = 1f
+                    }
                 }
             }
 
@@ -125,7 +127,7 @@ class GalleryRowHolder(
             val adjustedWidth1 = ((file.imageDimension?.width ?: defaultThumbnailSize) * shrinkRatio).toInt()
 
             // re-use existing one
-            val thumbnail = binding.rowLayout.get(index) as ImageView
+            val thumbnail = binding.rowLayout[index] as ImageView
             thumbnail.adjustViewBounds = true
 
 

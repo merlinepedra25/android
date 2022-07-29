@@ -19,11 +19,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.owncloud.android.datamodel
 
-data class GalleryRow(val files: List<OCFile>, val defaultHeight: Int, val defaultWidth: Int) {
-    fun getMaxHeight(): Float {
-        return files.map { it.imageDimension?.height ?: defaultHeight.toFloat() }.maxOrNull() ?: 0f
-    }
-}
+import java.io.Serializable
+
+data class ImageDimension(var width: Float = -1f, var height: Float = -1f) : Serializable
