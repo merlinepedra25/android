@@ -861,7 +861,8 @@ public final class DisplayUtils {
                                        AppPreferences preferences,
                                        ThemeColorUtils themeColorUtils,
                                        ThemeDrawableUtils themeDrawableUtils,
-                                       GalleryRowHolder galleryRowHolder) {
+                                       GalleryRowHolder galleryRowHolder,
+                                       Integer width) {
 
         // cancel previous generation, if view is re-used
         if (ThumbnailsCacheManager.cancelPotentialThumbnailWork(file, thumbnailView)) {
@@ -891,26 +892,26 @@ public final class DisplayUtils {
                                                            R.drawable.file_image,
                                                            null);
                 }
-                int px = ThumbnailsCacheManager.getThumbnailDimension();
-                Bitmap thumbnail = BitmapUtils.drawableToBitmap(drawable, px, px);
+
+                Bitmap thumbnail = BitmapUtils.drawableToBitmap(drawable, width / 2, width / 2);
 
                 final ThumbnailsCacheManager.AsyncGalleryImageDrawable asyncDrawable =
                     new ThumbnailsCacheManager.AsyncGalleryImageDrawable(context.getResources(),
                                                                          thumbnail,
                                                                          task);
 
-                //   if (shimmerThumbnail != null && shimmerThumbnail.getVisibility() == View.GONE) {
-//                                if (gridView) {
-//                                    configShimmerGridImageSize(shimmerThumbnail, preferences.getGridColumns());
-//                                }
-                // startShimmer(shimmerThumbnail, thumbnailView);
-                //   }
+//                if (shimmerThumbnail != null && shimmerThumbnail.getVisibility() == View.GONE) {
+                if (shimmerThumbnail != null) {
+                    Log_OC.d("Shimmer", "start Shimmer");
+                    startShimmer(shimmerThumbnail, thumbnailView);
+                }
 
                 task.setListener(new ThumbnailsCacheManager.GalleryImageGenerationTask.GalleryListener() {
                     @Override
                     public void onSuccess() {
                         galleryRowHolder.getBinding().rowLayout.invalidate();
-                        //stopShimmer(shimmerThumbnail, thumbnailView);
+                        Log_OC.d("Shimmer", "stop Shimmer");
+                        stopShimmer(shimmerThumbnail, thumbnailView);
                     }
 
                     @Override
@@ -920,7 +921,8 @@ public final class DisplayUtils {
 
                     @Override
                     public void onError() {
-                        // stopShimmer(shimmerThumbnail, thumbnailView);
+                        Log_OC.d("Shimmer", "stop Shimmer");
+                        stopShimmer(shimmerThumbnail, thumbnailView);
                     }
                 });
 

@@ -23,10 +23,12 @@
 package com.owncloud.android.ui.adapter
 
 import android.content.Context
+import android.graphics.Color
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.view.get
 import com.afollestad.sectionedrecyclerview.SectionedViewHolder
+import com.elyeproj.loaderviewlibrary.LoaderImageView
 import com.owncloud.android.R
 import com.owncloud.android.databinding.GalleryRowBinding
 import com.owncloud.android.datamodel.FileDataStorageManager
@@ -52,7 +54,14 @@ class GalleryRowHolder(
 
         // re-use existing ones
         while (binding.rowLayout.childCount < row.files.size) {
-            ImageView(context).apply {
+            val shimmer = LoaderImageView(context).apply {
+                setBackgroundColor(Color.RED)
+                setImageResource(R.drawable.background)
+                resetLoader()
+                invalidate()
+            }
+
+            val imageView = ImageView(context).apply {
                 setImageDrawable(
                     ThumbnailsCacheManager.AsyncGalleryImageDrawable(
                         context.resources,
@@ -64,6 +73,12 @@ class GalleryRowHolder(
                         null
                     )
                 )
+            }
+
+            LinearLayout(context).apply {
+                addView(shimmer)
+                addView(imageView)
+
                 binding.rowLayout.addView(this)
             }
         }
@@ -127,14 +142,20 @@ class GalleryRowHolder(
             val adjustedWidth1 = ((file.imageDimension?.width ?: defaultThumbnailSize) * shrinkRatio).toInt()
 
             // re-use existing one
-            val thumbnail = binding.rowLayout[index] as ImageView
+            val linearLayout = binding.rowLayout[index] as LinearLayout
+            val shimmer = linearLayout[0] as LoaderImageView
+
+            val thumbnail = linearLayout[1] as ImageView
             thumbnail.adjustViewBounds = true
+            thumbnail.scaleType = ImageView.ScaleType.CENTER
 
 
             ocFileListDelegate.bindGalleryRowThumbnail(
+                shimmer,
                 thumbnail,
                 file,
-                this
+                this,
+                adjustedWidth1
             )
 
             val params = LinearLayout.LayoutParams(adjustedWidth1, adjustedHeight1)
@@ -145,10 +166,13 @@ class GalleryRowHolder(
                 params.setMargins(0, 0, 0, 5)
             }
 
-
             thumbnail.layoutParams = params
             thumbnail.layoutParams.height = adjustedHeight1
             thumbnail.layoutParams.width = adjustedWidth1
+
+            shimmer.layoutParams = params
+            shimmer.layoutParams.height = adjustedHeight1
+            shimmer.layoutParams.width = adjustedWidth1
         }
     }
 

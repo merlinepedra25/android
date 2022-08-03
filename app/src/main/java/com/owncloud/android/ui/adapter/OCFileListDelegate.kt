@@ -24,6 +24,7 @@ package com.owncloud.android.ui.adapter
 import android.content.Context
 import android.view.View
 import android.widget.ImageView
+import com.elyeproj.loaderviewlibrary.LoaderImageView
 import com.nextcloud.client.account.User
 import com.nextcloud.client.preferences.AppPreferences
 import com.owncloud.android.R
@@ -92,7 +93,13 @@ class OCFileListDelegate(
         checkedFiles.clear()
     }
 
-    fun bindGalleryRowThumbnail(imageView: ImageView, file: OCFile, galleryRowHolder: GalleryRowHolder) {
+    fun bindGalleryRowThumbnail(
+        shimmer: LoaderImageView,
+        imageView: ImageView,
+        file: OCFile,
+        galleryRowHolder: GalleryRowHolder,
+        width: Int
+    ) {
         // thumbnail
         imageView.tag = file.fileId
         DisplayUtils.setGalleryImage(
@@ -103,11 +110,12 @@ class OCFileListDelegate(
             asyncGalleryTasks,
             gridView,
             context,
-            null,
+            shimmer,
             preferences,
             themeColorUtils,
             themeDrawableUtils,
-            galleryRowHolder
+            galleryRowHolder,
+            width
         )
 
         imageView.setOnClickListener { ocFileListFragmentInterface.onItemClicked(file) }
