@@ -41,9 +41,7 @@
     <uses-permission
         android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
@@ -156,6 +154,17 @@
         <receiver
             android:name="com.nextcloud.client.jobs.NotificationWork$NotificationReceiver"
             android:exported="false" />
+        <receiver
+            android:name="DashboardWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/dashboard_widget_info" />
+        </receiver>
 
         <activity
             android:name=".ui.activity.UploadFilesActivity"
@@ -218,7 +227,6 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
-
         <service
             android:name=".syncadapter.FileSyncService"
             android:exported="true"
@@ -231,6 +239,10 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter_files" />
         </service>
+        <service
+            android:name="DashboardWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="false" />
 
         <provider
             android:name=".providers.FileContentProvider"
@@ -302,16 +314,12 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/exposed_filepaths" />
         </provider>
-
         <provider
             android:name=".providers.DiskLruImageCacheFileProvider"
             android:authorities="@string/image_cache_provider_authority"
+            android:exported="true"
             android:grantUriPermissions="true"
-            android:permission="android.permission.MANAGE_DOCUMENTS"
-            android:exported="true">
-        </provider>
-
-        <!-- Disable WorkManager initialization. Whoever designed this, should pay closer attention -->
+            android:permission="android.permission.MANAGE_DOCUMENTS"></provider> <!-- Disable WorkManager initialization. Whoever designed this, should pay closer attention -->
         <!-- to "best before" dates in his fridge. -->
         <!-- disable default provider -->
         <provider
@@ -325,8 +333,6 @@
                 tools:node="remove" />
         </provider>
 
-
-
         <activity
             android:name=".authentication.AuthenticatorActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -339,7 +345,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".authentication.DeepLinkLoginActivity"
             android:clearTaskOnLaunch="true"
@@ -389,11 +394,9 @@
         <activity
             android:name=".ui.activity.ErrorsWhileCopyingHandlerActivity"
             android:exported="false" />
-
         <activity
             android:name="com.nextcloud.client.logger.ui.LogsActivity"
             android:exported="false" />
-
         <activity
             android:name="com.nextcloud.client.errorhandling.ShowErrorActivity"
             android:excludeFromRecents="true"
@@ -463,7 +466,6 @@
             android:label="@string/manage_space_title"
             android:theme="@style/Theme.ownCloud" />
 
-
         <service
             android:name=".services.AccountManagerService"
             android:enabled="true"
@@ -474,12 +476,10 @@
             android:name=".ui.activity.SsoGrantPermissionActivity"
             android:exported="true"
             android:theme="@style/Theme.ownCloud.Dialog.NoTitle" />
-
         <activity
             android:name="com.nextcloud.client.etm.EtmActivity"
             android:exported="false"
             android:theme="@style/Theme.ownCloud.Toolbar" />
-
         <activity
             android:name=".ui.preview.PreviewBitmapActivity"
             android:exported="false"
