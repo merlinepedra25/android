@@ -47,6 +47,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -429,7 +430,7 @@ public final class BitmapUtils {
                                      imageView);
     }
 
-    public static Bitmap createAvatarWithStatus(Bitmap avatar, StatusType statusType, String icon, Context context) {
+    public static Bitmap createAvatarWithStatus(Bitmap avatar, StatusType statusType, @NonNull String icon, Context context) {
         float avatarRadius = getResources().getDimension(R.dimen.list_item_avatar_icon_radius);
         int width = DisplayUtils.convertDpToPixel(2 * avatarRadius, context);
 

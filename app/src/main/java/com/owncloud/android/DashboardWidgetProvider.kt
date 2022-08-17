@@ -107,11 +107,18 @@ internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManage
             R.id.reload,
             PendingIntent.getBroadcast(context, appWidgetId, intentUpdate, PendingIntent.FLAG_UPDATE_CURRENT)
         )
+
+        val clickPI = PendingIntent.getActivity(
+            context, 0,
+            Intent(), PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        setPendingIntentTemplate(R.id.list, clickPI)
     }
 
     // Instruct the widget manager to update the widget
     appWidgetManager.updateAppWidget(appWidgetId, views)
     appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list)
 
-    Toast.makeText(context, "Widget has been updated: $appWidgetId", Toast.LENGTH_SHORT).show();
+    Toast.makeText(context, "Widget has been updated: $appWidgetId", Toast.LENGTH_SHORT).show()
 }

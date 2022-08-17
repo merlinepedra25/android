@@ -22,4 +22,13 @@
 
 package com.owncloud.android
 
-data class WidgetItem(val headline: String, val subline: String)
+import com.owncloud.android.lib.resources.users.StatusType
+
+data class WidgetItem(
+    val headline: String,
+    val subline: String,
+    val url: String? = null,
+    val userName: String? = null,
+    val icon: String? = null,
+    val statusType: StatusType? = null
+)
