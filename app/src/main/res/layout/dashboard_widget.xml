@@ -26,14 +26,18 @@
     style="@style/Widget.Nextcloud.AppWidget.Container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:backgroundTint="@color/grey_200"
+    android:orientation="vertical"
     android:theme="@style/Theme.ownCloud.Toolbar.AppWidgetContainer">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:paddingStart="@dimen/standard_margin"
+        android:paddingTop="@dimen/standard_margin"
+        android:paddingEnd="@dimen/standard_margin"
+        android:paddingBottom="@dimen/standard_margin"
         tools:ignore="UseCompoundDrawables">
 
         <ImageView
@@ -60,14 +64,16 @@
             android:layout_height="24dp"
             android:layout_gravity="center_vertical"
             android:layout_weight="0"
-            android:src="@drawable/ic_sync"
-            android:contentDescription="@string/refresh_content" />
+            android:contentDescription="@string/refresh_content"
+            android:src="@drawable/ic_sync" />
     </LinearLayout>
 
     <ListView
         android:id="@+id/list"
-        android:divider="@null"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent"
+        android:divider="@null"
+        android:paddingStart="@dimen/standard_margin"
+        android:paddingEnd="@dimen/standard_margin" />
 
 </LinearLayout>
