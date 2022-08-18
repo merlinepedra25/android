@@ -1046,4 +1046,5 @@
     <string name="app_widget_description">Shows all widgets from dashboard</string>
     <string name="icon_of_dashboard_widget">Icon of dashboard widget</string>
     <string name="refresh_content">Refresh content</string>
+    <string name="icon_of_widget_entry">Icon of widget entry</string>
 </resources>

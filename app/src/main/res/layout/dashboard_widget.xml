@@ -41,6 +41,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="center_vertical"
+            android:layout_marginEnd="@dimen/standard_half_margin"
             android:contentDescription="@string/icon_of_dashboard_widget"
             android:src="@drawable/ic_talk" />
 
@@ -65,6 +66,7 @@
 
     <ListView
         android:id="@+id/list"
+        android:divider="@null"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

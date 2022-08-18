@@ -90,16 +90,16 @@ class StackRemoteViewsFactory(
                 val avatarBitmap =
                     BitmapUtils.drawableToBitmap(TextDrawable.createNamedAvatar(widgetItem.userName, avatarRadius))
 
-                val avatar = BitmapUtils.createAvatarWithStatus(
-                    avatarBitmap,
-                    widgetItem.statusType,
-                    widgetItem.icon ?: "",
-                    context
-                )
+                // val avatar = BitmapUtils.createAvatarWithStatus(
+                //     avatarBitmap,
+                //     widgetItem.statusType,
+                //     widgetItem.icon ?: "",
+                //     context
+                // )
 
-                setImageViewBitmap(R.id.icon, avatar)
+                setImageViewBitmap(R.id.icon, avatarBitmap)
             } else {
-                setImageViewResource(R.id.icon, R.drawable.ic_user)
+                setImageViewResource(R.id.icon, R.drawable.ic_group)
             }
 
             // text
