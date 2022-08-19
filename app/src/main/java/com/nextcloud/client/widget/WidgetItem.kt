@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.owncloud.android
+package com.nextcloud.client.widget
 
 import com.owncloud.android.lib.resources.users.StatusType
 

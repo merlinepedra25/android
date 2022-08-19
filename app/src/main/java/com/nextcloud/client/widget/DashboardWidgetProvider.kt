@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.owncloud.android
+package com.nextcloud.client.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -30,6 +30,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.Toast
+import com.owncloud.android.R
 
 /**
  * Implementation of App Widget functionality.

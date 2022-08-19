@@ -29,6 +29,7 @@ import com.nextcloud.client.media.PlayerService;
 import com.nextcloud.client.migrations.Migrations;
 import com.nextcloud.client.onboarding.FirstRunActivity;
 import com.nextcloud.client.onboarding.WhatsNewActivity;
+import com.nextcloud.client.widget.DashboardWidgetConfigurationActivity;
 import com.nextcloud.ui.ChooseAccountDialogFragment;
 import com.nextcloud.ui.SetStatusDialogFragment;
 import com.owncloud.android.MainApp;
@@ -102,8 +103,8 @@ import com.owncloud.android.ui.fragment.FileDetailFragment;
 import com.owncloud.android.ui.fragment.FileDetailSharingFragment;
 import com.owncloud.android.ui.fragment.GalleryFragment;
 import com.owncloud.android.ui.fragment.LocalFileListFragment;
-import com.owncloud.android.ui.fragment.OCFileListBottomSheetDialogFragment;
 import com.owncloud.android.ui.fragment.OCFileListBottomSheetDialog;
+import com.owncloud.android.ui.fragment.OCFileListBottomSheetDialogFragment;
 import com.owncloud.android.ui.fragment.OCFileListFragment;
 import com.owncloud.android.ui.fragment.SharedListFragment;
 import com.owncloud.android.ui.fragment.UnifiedSearchFragment;
@@ -430,4 +431,7 @@ abstract class ComponentsModule {
 
     @ContributesAndroidInjector
     abstract SyncFileNotEnoughSpaceDialogFragment syncFileNotEnoughSpaceDialogFragment();
+
+    @ContributesAndroidInjector
+    abstract DashboardWidgetConfigurationActivity dashboardWidgetConfigurationActivity();
 }

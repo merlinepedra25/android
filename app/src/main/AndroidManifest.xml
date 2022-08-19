@@ -147,6 +147,13 @@
         <activity
             android:name=".ui.activity.SyncedFoldersActivity"
             android:exported="false" />
+        <activity
+            android:name="com.nextcloud.client.widget.DashboardWidgetConfigurationActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
 
         <receiver
             android:name="com.nextcloud.client.jobs.MediaFoldersDetectionWork$NotificationReceiver"
@@ -155,7 +162,7 @@
             android:name="com.nextcloud.client.jobs.NotificationWork$NotificationReceiver"
             android:exported="false" />
         <receiver
-            android:name="DashboardWidgetProvider"
+            android:name="com.nextcloud.client.widget.DashboardWidgetProvider"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -240,7 +247,7 @@
                 android:resource="@xml/syncadapter_files" />
         </service>
         <service
-            android:name="DashboardWidgetService"
+            android:name="com.nextcloud.client.widget.DashboardWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="false" />
 
