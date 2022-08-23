@@ -26,6 +26,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.nextcloud.android.lib.resources.dashboard.DashboardWidget
 import com.nextcloud.client.di.Injectable
 import com.owncloud.android.databinding.DashboardWidgetConfigurationLayoutBinding
 import com.owncloud.android.ui.adapter.DashboardWidgetListAdapter

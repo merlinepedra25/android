@@ -22,6 +22,8 @@
 
 package com.nextcloud.client.widget
 
+import com.nextcloud.android.lib.resources.dashboard.DashboardWidget
+
 interface DashboardWidgetConfigurationInterface {
     fun onItemClicked(dashboardWidget: DashboardWidget)
 }

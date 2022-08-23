@@ -76,4 +76,47 @@
         android:paddingStart="@dimen/standard_margin"
         android:paddingEnd="@dimen/standard_margin" />
 
+    <LinearLayout
+        android:id="@+id/empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_margin="@dimen/standard_half_margin"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/standard_margin">
+
+        <ImageView
+            android:id="@+id/empty_list_icon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_check" />
+
+        <TextView
+            android:id="@+id/empty_list_view_headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="2"
+            android:textColor="@color/black"
+            android:paddingTop="@dimen/standard_half_padding"
+            android:paddingBottom="@dimen/standard_half_padding"
+            android:text="No items"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/empty_list_view_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:paddingTop="@dimen/standard_half_padding"
+            android:paddingBottom="@dimen/standard_half_padding"
+            android:text="Check back later or reload." />
+    </LinearLayout>
+
 </LinearLayout>

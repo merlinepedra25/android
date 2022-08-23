@@ -27,6 +27,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import com.nextcloud.android.lib.resources.dashboard.DashboardWidgetItem
 import com.owncloud.android.R
 import com.owncloud.android.lib.common.utils.Log_OC
 import com.owncloud.android.lib.resources.users.StatusType
@@ -50,15 +51,14 @@ class StackRemoteViewsFactory(
     val intent: Intent
 ) : RemoteViewsService.RemoteViewsFactory {
 
-    private lateinit var widgetItems: List<WidgetItem>
+    private lateinit var widgetItems: List<DashboardWidgetItem>
 
-    // See the RemoteViewsFactory API reference for the full list of methods to
-// implement.
+    // See the RemoteViewsFactory API reference for the full list of methods to implement.
     override fun onCreate() {
         Log_OC.d("WidgetService", "onCreate")
 
         widgetItems = List(REMOTE_VIEW_COUNT) { index ->
-            WidgetItem(
+            DashboardWidgetItem(
                 "$index!", "Subline: " + DateFormat.getTimeInstance(
                     DateFormat.SHORT
                 ).format(Date())
@@ -67,7 +67,7 @@ class StackRemoteViewsFactory(
     }
 
     override fun onDataSetChanged() {
-        widgetItems = List(REMOTE_VIEW_COUNT) { index -> randomItem() }
+        widgetItems = randomList()
         Log_OC.d("WidgetService", "onDataSetChanged")
     }
 
@@ -107,8 +107,6 @@ class StackRemoteViewsFactory(
             setTextViewText(R.id.headline, widgetItem.headline)
             setTextViewText(R.id.subline, widgetItem.subline)
 
-
-
             if (widgetItem.url != null) {
                 val clickIntent = Intent(Intent.ACTION_VIEW, Uri.parse(widgetItem.url))
                 setOnClickFillInIntent(R.id.text_container, clickIntent)
@@ -132,23 +130,41 @@ class StackRemoteViewsFactory(
         return true // TODO check me
     }
 
-    private fun randomItem(): WidgetItem {
-        return when (Random().nextInt(10)) {
-            0 -> WidgetItem("⚙️ Sysadmin", "You were mentioned", "https://sysadmin.de")
-            1 -> WidgetItem("👩‍⚖️ Support!", "You were mentioned", "https://support.nextcloud.com")
-            2 -> WidgetItem("Andy Scherzinger", "Please reply", null, "Andy", statusType = StatusType.DND)
-            3 -> WidgetItem("Christoph Wurst", "See you next week!", null, "Christoph Wurst", "🌴️", StatusType.ONLINE)
-            4 -> WidgetItem("\uD83D\uDEE0️ Engineering", "You were mentioned")
-            5 -> WidgetItem("\uD83D\uDCF1 Mobile apps public", "Please see link above.")
-            else -> WidgetItem(
-                "Jos Poortvliet",
-                "Haha, funny",
-                null,
-                "Jos Poortvliet",
-                "\uD83D\uDC99",
-                StatusType.ONLINE
-            )
-
+    private fun randomList(): List<DashboardWidgetItem> {
+        if (Random().nextInt(3) == 1) {
+            return emptyList()
+        } else {
+            return List(REMOTE_VIEW_COUNT) {
+                when (Random().nextInt(10)) {
+                    0 -> DashboardWidgetItem("⚙️ Sysadmin", "You were mentioned", "https://sysadmin.de")
+                    1 -> DashboardWidgetItem("👩‍⚖️ Support!", "You were mentioned", "https://support.nextcloud.com")
+                    2 -> DashboardWidgetItem(
+                        "Andy Scherzinger",
+                        "Please reply",
+                        null,
+                        "Andy",
+                        statusType = StatusType.DND
+                    )
+                    3 -> DashboardWidgetItem(
+                        "Christoph Wurst",
+                        "See you next week!",
+                        null,
+                        "Christoph Wurst",
+                        "🌴️",
+                        StatusType.ONLINE
+                    )
+                    4 -> DashboardWidgetItem("\uD83D\uDEE0️ Engineering", "You were mentioned")
+                    5 -> DashboardWidgetItem("\uD83D\uDCF1 Mobile apps public", "Please see link above.")
+                    else -> DashboardWidgetItem(
+                        "Jos Poortvliet",
+                        "Haha, funny",
+                        null,
+                        "Jos Poortvliet",
+                        "\uD83D\uDC99",
+                        StatusType.ONLINE
+                    )
+                }
+            }
         }
     }
 }

@@ -98,9 +98,7 @@ internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManage
         val intentUpdate = Intent(context, DashboardWidgetProvider::class.java)
         intentUpdate.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
 
-//Update the current widget instance only, by creating an array that contains the widget’s unique ID// 
-
-//Update the current widget instance only, by creating an array that contains the widget’s unique ID// 
+        //Update the current widget instance only, by creating an array that contains the widget’s unique ID// 
         val idArray = intArrayOf(appWidgetId)
         intentUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, idArray)
 

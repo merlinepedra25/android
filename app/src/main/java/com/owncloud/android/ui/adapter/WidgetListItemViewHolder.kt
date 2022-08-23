@@ -23,7 +23,7 @@
 package com.owncloud.android.ui.adapter
 
 import androidx.recyclerview.widget.RecyclerView
-import com.nextcloud.client.widget.DashboardWidget
+import com.nextcloud.android.lib.resources.dashboard.DashboardWidget
 import com.nextcloud.client.widget.DashboardWidgetConfigurationInterface
 import com.owncloud.android.R
 import com.owncloud.android.databinding.WidgetListItemBinding
