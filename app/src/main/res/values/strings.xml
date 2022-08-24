@@ -1048,4 +1048,5 @@
     <string name="refresh_content">Refresh content</string>
     <string name="icon_of_widget_entry">Icon of widget entry</string>
     <string name="choose_widget">Choose widget</string>
+    <string name="reload">Reload</string>
 </resources>

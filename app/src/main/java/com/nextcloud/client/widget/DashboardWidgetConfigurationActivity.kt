@@ -24,18 +24,33 @@ package com.nextcloud.client.widget
 import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.nextcloud.android.lib.resources.dashboard.DashboardListWidgetsRemoteOperation
 import com.nextcloud.android.lib.resources.dashboard.DashboardWidget
+import com.nextcloud.client.account.UserAccountManager
 import com.nextcloud.client.di.Injectable
+import com.nextcloud.client.network.ClientFactory
+import com.owncloud.android.R
 import com.owncloud.android.databinding.DashboardWidgetConfigurationLayoutBinding
 import com.owncloud.android.ui.adapter.DashboardWidgetListAdapter
 import com.owncloud.android.utils.theme.ThemeDrawableUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidgetConfigurationInterface, Injectable {
     @Inject
     lateinit var themeDrawableUtils: ThemeDrawableUtils
+
+    @Inject
+    lateinit var accountManager: UserAccountManager
+
+    @Inject
+    lateinit var clientFactory: ClientFactory
 
     var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
@@ -50,11 +65,15 @@ class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidge
         setContentView(binding.root)
 
         val layoutManager = LinearLayoutManager(this)
-        val adapter = DashboardWidgetListAdapter(themeDrawableUtils, this)
+        val adapter = DashboardWidgetListAdapter(themeDrawableUtils, accountManager, clientFactory, this, this)
         binding.list.apply {
+            setHasFooter(false)
             setAdapter(adapter)
             setLayoutManager(layoutManager)
+            setEmptyView(binding.emptyView.emptyListView)
         }
+
+        loadWidgets(adapter, binding)
 
         binding.close.setOnClickListener { finish() }
 
@@ -68,6 +87,45 @@ class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidge
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             finish()
             return
+        }
+    }
+
+    private fun loadWidgets(adapter: DashboardWidgetListAdapter, binding: DashboardWidgetConfigurationLayoutBinding) {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
+                binding.emptyView.emptyListIcon.visibility = View.GONE
+                binding.emptyView.emptyListViewText.visibility = View.GONE
+                binding.emptyView.emptyListViewAction.visibility = View.GONE
+            }
+
+            try {
+                val client = clientFactory.createNextcloudClient(accountManager.user)
+                val result = DashboardListWidgetsRemoteOperation().execute(client)
+
+                withContext(Dispatchers.Main) {
+                    adapter.setWidgetList(result.resultData)
+                }
+            } catch (e: Exception) {
+                binding.emptyView.emptyListIcon.apply {
+                    setImageResource(R.drawable.ic_list_empty_error)
+                    visibility = View.VISIBLE
+                }
+                binding.emptyView.emptyListViewText.apply {
+                    setText(R.string.common_error)
+                    visibility = View.VISIBLE
+                }
+                binding.emptyView.emptyListViewAction.apply {
+                    visibility = View.VISIBLE
+                    setText(R.string.reload)
+                    setOnClickListener {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            withContext(Dispatchers.Main) {
+                                loadWidgets(adapter, binding)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

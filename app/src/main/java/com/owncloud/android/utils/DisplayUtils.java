@@ -556,7 +556,7 @@ public final class DisplayUtils {
                                     int width,
                                     int height) {
         try {
-            if (iconUrl.endsWith(".svg")) {
+            if (Uri.parse(iconUrl).getEncodedPath().endsWith(".svg")) {
                 downloadSVGIcon(currentAccountProvider, clientFactory, context, iconUrl, imageView, placeholder, width,
                                 height);
             } else {

@@ -30,6 +30,7 @@ import com.nextcloud.client.migrations.Migrations;
 import com.nextcloud.client.onboarding.FirstRunActivity;
 import com.nextcloud.client.onboarding.WhatsNewActivity;
 import com.nextcloud.client.widget.DashboardWidgetConfigurationActivity;
+import com.nextcloud.client.widget.DashboardWidgetService;
 import com.nextcloud.ui.ChooseAccountDialogFragment;
 import com.nextcloud.ui.SetStatusDialogFragment;
 import com.owncloud.android.MainApp;
@@ -341,6 +342,9 @@ abstract class ComponentsModule {
 
     @ContributesAndroidInjector
     abstract FileSyncService fileSyncService();
+
+    @ContributesAndroidInjector
+    abstract DashboardWidgetService dashboardWidgetService();
 
     @ContributesAndroidInjector
     abstract PreviewPdfFragment previewPDFFragment();

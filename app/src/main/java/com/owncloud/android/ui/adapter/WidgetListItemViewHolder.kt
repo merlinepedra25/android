@@ -22,21 +22,55 @@
 
 package com.owncloud.android.ui.adapter
 
+import android.content.Context
+import android.graphics.drawable.Drawable
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.request.animation.GlideAnimation
+import com.bumptech.glide.request.target.SimpleTarget
 import com.nextcloud.android.lib.resources.dashboard.DashboardWidget
+import com.nextcloud.client.account.UserAccountManager
+import com.nextcloud.client.network.ClientFactory
 import com.nextcloud.client.widget.DashboardWidgetConfigurationInterface
 import com.owncloud.android.R
 import com.owncloud.android.databinding.WidgetListItemBinding
+import com.owncloud.android.utils.DisplayUtils
 import com.owncloud.android.utils.theme.ThemeDrawableUtils
 
-class WidgetListItemViewHolder(val binding: WidgetListItemBinding, val themeDrawableUtils: ThemeDrawableUtils) :
+class WidgetListItemViewHolder(
+    val binding: WidgetListItemBinding,
+    val themeDrawableUtils: ThemeDrawableUtils,
+    val accountManager: UserAccountManager,
+    val clientFactory: ClientFactory,
+    val context: Context
+) :
     RecyclerView.ViewHolder(binding.root) {
     fun bind(
         dashboardWidget: DashboardWidget,
         dashboardWidgetConfigurationInterface: DashboardWidgetConfigurationInterface
     ) {
         binding.layout.setOnClickListener { dashboardWidgetConfigurationInterface.onItemClicked(dashboardWidget) }
-        binding.icon.setImageDrawable(themeDrawableUtils.tintDrawable(dashboardWidget.icon, R.color.black))
+
+        val target = object : SimpleTarget<Drawable>() {
+            override fun onResourceReady(resource: Drawable?, glideAnimation: GlideAnimation<in Drawable>?) {
+                binding.icon.setImageDrawable(resource)
+            }
+
+            override fun onLoadFailed(e: java.lang.Exception?, errorDrawable: Drawable?) {
+                super.onLoadFailed(e, errorDrawable)
+                binding.icon.setImageDrawable(errorDrawable)
+            }
+        }
+
+        DisplayUtils.downloadIcon(
+            accountManager,
+            clientFactory,
+            context,
+            dashboardWidget.iconUrl,
+            target,
+            R.drawable.ic_dashboard,
+            binding.icon.width,
+            binding.icon.height
+        )
         binding.name.text = dashboardWidget.title
     }
 }

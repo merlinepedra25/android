@@ -42,7 +42,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/headline"
+            android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="16dp"
             android:gravity="start"
@@ -50,7 +50,7 @@
             tools:text="First line" />
 
         <TextView
-            android:id="@+id/subline"
+            android:id="@+id/subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"

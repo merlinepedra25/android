@@ -22,31 +22,35 @@
 
 package com.owncloud.android.ui.adapter
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.nextcloud.android.lib.resources.dashboard.DashboardWidget
+import com.nextcloud.client.account.UserAccountManager
+import com.nextcloud.client.network.ClientFactory
 import com.nextcloud.client.widget.DashboardWidgetConfigurationInterface
-import com.owncloud.android.R
 import com.owncloud.android.databinding.WidgetListItemBinding
 import com.owncloud.android.utils.theme.ThemeDrawableUtils
 
 class DashboardWidgetListAdapter(
     val themeDrawableUtils: ThemeDrawableUtils,
+    val accountManager: UserAccountManager,
+    val clientFactory: ClientFactory,
+    val context: Context,
     private val dashboardWidgetConfigurationInterface: DashboardWidgetConfigurationInterface
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private val widgets = listOf(
-        DashboardWidget("talk", "Talk mentions", R.drawable.ic_talk),
-        DashboardWidget("mail", "Unread mail", R.drawable.ic_email),
-        DashboardWidget("weather", "Weather", R.drawable.ic_dashboard),
-        DashboardWidget("events", "Upcoming events", R.drawable.file_calendar)
-    )
+    private var widgets = emptyList<DashboardWidget>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return WidgetListItemViewHolder(
             WidgetListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false),
-            themeDrawableUtils
+            themeDrawableUtils,
+            accountManager,
+            clientFactory,
+            context
         )
     }
 
@@ -58,5 +62,11 @@ class DashboardWidgetListAdapter(
 
     override fun getItemCount(): Int {
         return widgets.size
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setWidgetList(list: HashMap<String, DashboardWidget>?) {
+        widgets = list?.map { (_, value) -> value }?.sortedBy { it.order } ?: emptyList()
+        notifyDataSetChanged()
     }
 }
