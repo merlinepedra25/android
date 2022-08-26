@@ -26,6 +26,7 @@
 
 package com.owncloud.android.ui.adapter;
 
+import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
@@ -40,7 +41,6 @@ import com.owncloud.android.databinding.AccountActionBinding;
 import com.owncloud.android.databinding.AccountItemBinding;
 import com.owncloud.android.lib.common.OwnCloudAccount;
 import com.owncloud.android.lib.common.utils.Log_OC;
-import com.owncloud.android.ui.activity.BaseActivity;
 import com.owncloud.android.utils.DisplayUtils;
 import com.owncloud.android.utils.theme.ThemeColorUtils;
 import com.owncloud.android.utils.theme.ThemeDrawableUtils;
@@ -59,7 +59,7 @@ public class UserListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final String TAG = UserListAdapter.class.getSimpleName();
 
     private final float accountAvatarRadiusDimension;
-    private final BaseActivity context;
+    private final Context context;
     private List<UserListItem> values;
     private Listener accountListAdapterListener;
     private final UserAccountManager accountManager;
@@ -72,7 +72,7 @@ public class UserListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private final ThemeColorUtils themeColorUtils;
     private final ThemeDrawableUtils themeDrawableUtils;
 
-    public UserListAdapter(BaseActivity context,
+    public UserListAdapter(Context context,
                            UserAccountManager accountManager,
                            List<UserListItem> values,
                            ClickListener clickListener,

@@ -22,11 +22,12 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout xmlns:tools="http://schemas.android.com/tools"
+    <LinearLayout
         android:id="@id/layout"
         android:layout_width="match_parent"
         android:layout_height="32dp"
@@ -49,6 +50,14 @@
             android:gravity="center_vertical"
             android:text="@string/choose_widget"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/account"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="gone"
+            android:text="TextView" />
     </LinearLayout>
 
     <com.owncloud.android.ui.EmptyRecyclerView

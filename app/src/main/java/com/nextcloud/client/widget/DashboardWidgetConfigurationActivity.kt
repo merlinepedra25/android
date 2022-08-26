@@ -29,12 +29,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nextcloud.android.lib.resources.dashboard.DashboardListWidgetsRemoteOperation
 import com.nextcloud.android.lib.resources.dashboard.DashboardWidget
+import com.nextcloud.client.account.User
 import com.nextcloud.client.account.UserAccountManager
 import com.nextcloud.client.di.Injectable
 import com.nextcloud.client.network.ClientFactory
 import com.owncloud.android.R
 import com.owncloud.android.databinding.DashboardWidgetConfigurationLayoutBinding
+import com.owncloud.android.lib.common.utils.Log_OC
 import com.owncloud.android.ui.adapter.DashboardWidgetListAdapter
+import com.owncloud.android.ui.dialog.AccountChooserInterface
+import com.owncloud.android.ui.dialog.MultipleAccountsDialog
 import com.owncloud.android.utils.theme.ThemeDrawableUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +46,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidgetConfigurationInterface, Injectable {
+class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidgetConfigurationInterface, Injectable,
+    AccountChooserInterface {
+    private lateinit var adapter: DashboardWidgetListAdapter
+    private lateinit var binding: DashboardWidgetConfigurationLayoutBinding
+
     @Inject
     lateinit var themeDrawableUtils: ThemeDrawableUtils
 
@@ -61,11 +69,11 @@ class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidge
         // out of the widget placement if the user presses the back button.
         setResult(RESULT_CANCELED)
 
-        val binding = DashboardWidgetConfigurationLayoutBinding.inflate(layoutInflater)
+        binding = DashboardWidgetConfigurationLayoutBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val layoutManager = LinearLayoutManager(this)
-        val adapter = DashboardWidgetListAdapter(themeDrawableUtils, accountManager, clientFactory, this, this)
+        adapter = DashboardWidgetListAdapter(themeDrawableUtils, accountManager, clientFactory, this, this)
         binding.list.apply {
             setHasFooter(false)
             setAdapter(adapter)
@@ -73,7 +81,18 @@ class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidge
             setEmptyView(binding.emptyView.emptyListView)
         }
 
-        loadWidgets(adapter, binding)
+        if (accountManager.allUsers.size > 2) {
+            // show dropdown
+            binding.account.apply {
+                visibility = View.VISIBLE
+                setOnClickListener {
+                    val dialog = MultipleAccountsDialog()
+                    dialog.show(supportFragmentManager, null)
+                }
+            }
+        } else {
+            loadWidgets(accountManager.user)
+        }
 
         binding.close.setOnClickListener { finish() }
 
@@ -90,38 +109,36 @@ class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidge
         }
     }
 
-    private fun loadWidgets(adapter: DashboardWidgetListAdapter, binding: DashboardWidgetConfigurationLayoutBinding) {
+    private fun loadWidgets(user: User) {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main) {
-                binding.emptyView.emptyListIcon.visibility = View.GONE
-                binding.emptyView.emptyListViewText.visibility = View.GONE
-                binding.emptyView.emptyListViewAction.visibility = View.GONE
+                binding.emptyView.root.visibility = View.GONE
             }
 
             try {
-                val client = clientFactory.createNextcloudClient(accountManager.user)
+                val client = clientFactory.createNextcloudClient(user)
                 val result = DashboardListWidgetsRemoteOperation().execute(client)
 
                 withContext(Dispatchers.Main) {
                     adapter.setWidgetList(result.resultData)
                 }
             } catch (e: Exception) {
-                binding.emptyView.emptyListIcon.apply {
-                    setImageResource(R.drawable.ic_list_empty_error)
-                    visibility = View.VISIBLE
-                }
-                binding.emptyView.emptyListViewText.apply {
-                    setText(R.string.common_error)
-                    visibility = View.VISIBLE
-                }
-                binding.emptyView.emptyListViewAction.apply {
-                    visibility = View.VISIBLE
-                    setText(R.string.reload)
-                    setOnClickListener {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            withContext(Dispatchers.Main) {
-                                loadWidgets(adapter, binding)
-                            }
+                Log_OC.e(this, "Error loading widgets for user $user", e)
+
+                withContext(Dispatchers.Main) {
+                    binding.emptyView.emptyListIcon.apply {
+                        setImageResource(R.drawable.ic_list_empty_error)
+                        visibility = View.VISIBLE
+                    }
+                    binding.emptyView.emptyListViewText.apply {
+                        setText(R.string.common_error)
+                        visibility = View.VISIBLE
+                    }
+                    binding.emptyView.emptyListViewAction.apply {
+                        visibility = View.VISIBLE
+                        setText(R.string.reload)
+                        setOnClickListener {
+                            loadWidgets(user)
                         }
                     }
                 }
@@ -141,5 +158,9 @@ class DashboardWidgetConfigurationActivity : AppCompatActivity(), DashboardWidge
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         setResult(RESULT_OK, resultValue)
         finish()
+    }
+
+    override fun onAccountChosen(user: User) {
+        loadWidgets(user)
     }
 }
